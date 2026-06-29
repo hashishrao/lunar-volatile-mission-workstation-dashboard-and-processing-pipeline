@@ -10,7 +10,6 @@ Thumbs.db
 # Large raw and processed scientific datasets
 work/data/raw/
 work/data/processed/
-dashboard/data.json
 *.tif
 *.img
 *.TIF
