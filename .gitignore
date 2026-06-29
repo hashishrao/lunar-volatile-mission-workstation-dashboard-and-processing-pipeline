@@ -1,0 +1,19 @@
+# Virtual Environment
+work/.venv/
+__pycache__/
+*.pyc
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Large raw and processed scientific datasets
+work/data/raw/
+work/data/processed/
+dashboard/data.json
+*.tif
+*.img
+*.TIF
+*.IMG
+*.csv
+outputs/figures/

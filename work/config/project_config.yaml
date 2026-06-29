@@ -1,0 +1,47 @@
+project:
+  name: detection-and-characterization-of-subsurface-ice
+  projection: lunar_south_polar_stereographic
+
+inputs:
+  # Replace these placeholder paths with the supplied Chandrayaan-2 products.
+  dfsar_same_circular: work/data/raw/dfsar_same_circular.tif
+  dfsar_opposite_circular: work/data/raw/dfsar_opposite_circular.tif
+  dfsar_dop: work/data/raw/dfsar_dop.tif
+  ohrc_image: work/data/raw/ohrc_image.tif
+  dem: work/data/raw/dem.tif
+  psr_mask: work/data/raw/psr_mask.tif
+
+outputs:
+  processed_dir: work/data/processed
+  map_dir: outputs/maps
+  figure_dir: outputs/figures
+
+thresholds:
+  cpr_ice_min: 1.0
+  dop_ice_max: 0.13
+  landing_slope_max_deg: 10.0
+  rover_slope_soft_max_deg: 12.0
+  rover_slope_hard_max_deg: 15.0
+  high_confidence_min: 0.80
+  moderate_confidence_min: 0.60
+
+weights:
+  ice_cpr: 0.35
+  ice_dop: 0.30
+  ice_psr: 0.20
+  ice_low_roughness: 0.15
+  hazard_slope: 0.40
+  hazard_roughness: 0.25
+  hazard_shadow: 0.20
+  hazard_boulder_proxy: 0.15
+  traverse_distance: 1.00
+  traverse_slope: 8.00
+  traverse_roughness: 4.00
+  traverse_shadow: 2.00
+
+ice_volume:
+  depth_m: 5.0
+  conservative_fraction: 0.05
+  moderate_fraction: 0.10
+  optimistic_fraction: 0.20
+

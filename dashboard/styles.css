@@ -1,0 +1,932 @@
+/* 
+  TACTICAL LUNAR COMMAND INTERFACE STYLE SHEET
+  Aesthetic: 2035 JPL Planetary workstation & Tactical GIS systems.
+*/
+
+:root {
+  --bg-primary: #07080a;
+  --bg-secondary: #0d1117;
+  --border-color: #1f242d;
+  --color-green: #00ffaa;
+  --color-amber: #ffb000;
+  --color-red: #ff3355;
+  --color-cyan: #14d8ff;
+  --color-purple: #b05cff;
+  --text-primary: #d1d5db;
+  --text-muted: #6b7280;
+  --font-mono: 'JetBrains Mono', 'Share Tech Mono', monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* Master workstation wrapper */
+.mission-workstation {
+  padding: 8px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Tactical Header Bar */
+.tactical-header {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  padding: 6px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  letter-spacing: 1px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.system-id {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pulse-indicator {
+  width: 8px;
+  height: 8px;
+  background-color: var(--color-green);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--color-green);
+  animation: pulse 1.8s infinite;
+}
+
+.title-bold {
+  color: #fff;
+  font-weight: 700;
+}
+
+.sub-agency {
+  color: var(--color-cyan);
+}
+
+.separator {
+  color: var(--border-color);
+}
+
+.mission-status {
+  color: var(--color-amber);
+}
+
+.workstation-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.terminal-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 3px 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  cursor: pointer;
+  outline: none;
+}
+
+.terminal-btn:hover {
+  border-color: var(--color-cyan);
+  color: var(--color-cyan);
+  background-color: rgba(20, 216, 255, 0.05);
+}
+
+.terminal-btn.active {
+  border-color: var(--color-amber);
+  color: var(--color-amber);
+  background-color: rgba(255, 176, 0, 0.05);
+}
+
+/* Base Workstation Panel */
+.workstation-panel {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  position: relative;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; 
+}
+
+.panel-tag {
+  position: absolute;
+  top: -1px;
+  left: 10px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-top: none;
+  font-size: 8px;
+  padding: 1px 5px;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  z-index: 5;
+}
+
+.workstation-panel h3 {
+  font-size: 11px;
+  color: #fff;
+  margin-bottom: 3px;
+  letter-spacing: 1px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 2px;
+}
+
+.panel-subtitle {
+  color: var(--text-muted);
+  font-size: 9px;
+  margin-bottom: 8px;
+}
+
+/* Workspace Grid (Upper Panel Block) */
+.workspace-grid {
+  display: grid;
+  grid-template-columns: 260px 1fr 340px;
+  gap: 8px;
+  flex: 1;
+  min-height: 0;
+  height: calc(100vh - 210px); 
+}
+
+/* Left Sidebar Map Controls */
+.map-controls-panel {
+  overflow-y: auto;
+}
+
+.layer-selector-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.layer-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Custom Checkbox */
+.checkbox-container {
+  display: block;
+  position: relative;
+  padding-left: 20px;
+  cursor: pointer;
+  font-size: 10.5px;
+  color: var(--text-primary);
+  user-select: none;
+}
+
+.checkbox-container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.checkmark {
+  position: absolute;
+  top: 1px;
+  left: 0;
+  height: 12px;
+  width: 12px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-primary);
+}
+
+.checkbox-container:hover input ~ .checkmark {
+  border-color: var(--color-cyan);
+}
+
+.checkbox-container input:checked ~ .checkmark {
+  background-color: var(--color-cyan);
+  border-color: var(--color-cyan);
+}
+
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+.checkbox-container input:checked ~ .checkmark:after {
+  display: block;
+}
+
+.checkbox-container .checkmark:after {
+  left: 4px;
+  top: 1px;
+  width: 3px;
+  height: 6px;
+  border: solid var(--bg-primary);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Sliders */
+.opacity-slider, .xai-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 3px;
+  background: var(--border-color);
+  outline: none;
+  opacity: 0.8;
+}
+
+.opacity-slider::-webkit-slider-thumb, .xai-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 8px;
+  height: 10px;
+  background: var(--color-cyan);
+  cursor: pointer;
+}
+
+.section-divider {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 10px 0;
+}
+
+/* Statistics and correlation panel styles */
+.stats-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  padding: 8px;
+}
+
+.terminal-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9.5px;
+}
+
+.terminal-table th, .terminal-table td {
+  padding: 4px 6px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.terminal-table th {
+  color: var(--text-muted);
+  font-weight: normal;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.terminal-table td {
+  color: #fff;
+}
+
+.correlation-label {
+  font-size: 8.5px;
+  color: var(--text-muted);
+  margin-top: 5px;
+  letter-spacing: 0.5px;
+}
+
+.corr-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.corr-grid div {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  padding: 3px 5px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+}
+
+.corr-grid span {
+  color: var(--text-primary);
+}
+
+.corr-grid strong {
+  color: var(--color-cyan);
+}
+
+.stats-footer-note {
+  font-size: 7.5px;
+  color: var(--color-green);
+  margin-top: 2px;
+}
+
+/* Platform Stack Integration badges */
+.software-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.stack-badge {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 8.5px;
+  padding: 2px 6px;
+  border-radius: 2px;
+}
+
+.stack-badge.text-green {
+  color: var(--color-green);
+  border-color: rgba(0, 255, 170, 0.2);
+}
+
+.stack-badge.text-cyan {
+  color: var(--color-cyan);
+  border-color: rgba(20, 216, 255, 0.2);
+}
+
+/* Central Visualizer Section */
+.visualizer-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  height: 100%;
+}
+
+.main-map-panel {
+  flex: 1;
+  min-height: 0;
+}
+
+.map-view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.map-view-header h2 {
+  font-size: 11.5px;
+  color: var(--color-green);
+  letter-spacing: 1px;
+}
+
+.view-telemetry {
+  color: var(--text-muted);
+  font-size: 9px;
+  display: flex;
+  gap: 8px;
+}
+
+.gis-canvas-container {
+  position: relative;
+  flex: 1;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.gis-canvas-container canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* Spatial Telemetry HUD inside visualizer */
+.spatial-telemetry-hud {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  background-color: rgba(7, 8, 10, 0.92);
+  border: 1px solid var(--border-color);
+  padding: 5px 10px;
+  pointer-events: none;
+  font-size: 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 10;
+}
+
+.spatial-telemetry-hud span {
+  color: var(--text-muted);
+  margin-right: 4px;
+}
+
+.spatial-telemetry-hud strong {
+  color: var(--color-cyan);
+}
+
+.gis-legend {
+  display: flex;
+  gap: 12px;
+  margin-top: 6px;
+  font-size: 9px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-muted);
+}
+
+.swatch {
+  width: 10px;
+  height: 5px;
+  display: inline-block;
+}
+
+.path-swatch {
+  background-color: var(--color-cyan);
+  border-bottom: 1.5px dashed #fff;
+}
+
+.start-swatch {
+  background-color: var(--color-green);
+  border-radius: 50%;
+  width: 7px;
+  height: 7px;
+}
+
+.target-swatch {
+  background-color: var(--color-amber);
+  border-radius: 50%;
+  width: 7px;
+  height: 7px;
+}
+
+.psr-outline-swatch {
+  border: 1.5px solid var(--color-green);
+  background-color: transparent;
+}
+
+.anomaly-swatch {
+  background-color: rgba(176, 92, 255, 0.4);
+  border: 1px solid var(--color-purple);
+}
+
+/* Stratigraphic Cross-Section Panel */
+.cross-section-panel {
+  height: 155px; 
+  flex-shrink: 0;
+}
+
+.cross-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.cross-section-header h2 {
+  font-size: 10px;
+  color: var(--color-cyan);
+  letter-spacing: 0.5px;
+}
+
+.cross-section-header .telemetry {
+  font-size: 9px;
+}
+
+.cross-section-container {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  flex: 1;
+  position: relative;
+}
+
+.cross-section-container canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* Right Panel: Decision Engine */
+.decision-panel {
+  overflow-y: auto;
+}
+
+/* Landing Zoom monitor styling */
+.landing-zoom-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  padding: 6px;
+  position: relative;
+  height: 155px;
+}
+
+#landingZoomCanvas {
+  background-color: #000;
+  border: 1px solid var(--border-color);
+  display: block;
+  width: 100%;
+  height: calc(100% - 18px);
+}
+
+.landing-zoom-meta {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  font-size: 8px;
+  color: var(--text-muted);
+}
+
+/* Expected Subsurface Ice panel styling */
+.expected-ice-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  padding: 6px;
+  position: relative;
+  height: 155px;
+}
+
+#iceReconstructionCanvas {
+  background-color: #000;
+  border: 1px solid var(--border-color);
+  display: block;
+  width: 100%;
+  height: calc(100% - 18px);
+}
+
+.expected-ice-meta {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  font-size: 8px;
+  color: var(--text-muted);
+}
+
+.expected-ice-meta strong {
+  color: var(--color-cyan);
+}
+
+.xai-slider-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.xai-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.xai-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9.5px;
+}
+
+.xai-label span {
+  color: var(--text-primary);
+}
+
+.xai-label strong {
+  color: var(--color-cyan);
+}
+
+.counterfactual-card {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  padding: 6px 10px;
+  margin-top: 8px;
+  font-size: 9px;
+  line-height: 1.35;
+  color: var(--color-cyan);
+}
+
+/* Metric Display in Right Sidebar */
+.resource-metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+
+.metric-item {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  padding: 6px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.metric-lbl {
+  font-size: 8px;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+.metric-val {
+  font-size: 11.5px;
+  color: #fff;
+  font-weight: bold;
+}
+
+/* Lower Control Grid (Footer Area) */
+.lower-control-grid {
+  display: grid;
+  grid-template-columns: 260px 240px 1fr 340px; 
+  gap: 8px;
+  height: 155px; 
+  flex-shrink: 0;
+  min-height: 0;
+}
+
+/* Rover Telemetry */
+.nav-control-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.control-box {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.terminal-select {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 3px;
+  outline: none;
+}
+
+.nav-telemetry-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.nav-telemetry-grid div {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  padding: 4px 6px;
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-telemetry-grid span {
+  font-size: 8px;
+  color: var(--text-muted);
+}
+
+.nav-telemetry-grid strong {
+  font-size: 10px;
+  color: var(--color-cyan);
+}
+
+/* Landing Site Pareto Frontier Chart style */
+.pareto-content {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  height: 100%;
+}
+
+#paretoCanvas {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  flex-shrink: 0;
+  width: 130px;
+  height: 90px;
+}
+
+.pareto-legend {
+  font-size: 8.5px;
+  color: var(--text-muted);
+  flex: 1;
+}
+
+.pareto-legend strong {
+  color: #fff;
+}
+
+.pareto-legend span {
+  color: var(--color-green);
+  display: block;
+  margin-top: 2px;
+}
+
+/* Temporal Timeline */
+.slider-timeline-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-height: 0;
+}
+
+.timeline-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 8px;
+  color: var(--text-muted);
+}
+
+.timeline-explanation {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  padding: 5px 8px;
+  font-size: 8.5px;
+  line-height: 1.3;
+  color: var(--color-amber);
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Competing Geophysical Hypotheses */
+.bayesian-hypotheses-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.hypothesis-item {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.hypothesis-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+}
+
+.hypothesis-bar-bg {
+  height: 5px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  position: relative;
+  overflow: hidden;
+}
+
+.hypothesis-bar-fill {
+  height: 100%;
+  background-color: var(--color-amber);
+  transition: width 0.3s ease-out;
+}
+
+.hypothesis-item.top-hypothesis .hypothesis-bar-fill {
+  background-color: var(--color-green);
+}
+
+/* Judge Briefing Modal CSS styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(5, 7, 10, 0.94);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  transition: opacity 0.3s ease;
+}
+
+.modal-overlay.hidden {
+  display: none;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.briefing-container {
+  background-color: var(--bg-secondary);
+  border: 2px solid var(--color-green);
+  box-shadow: 0 0 20px rgba(0, 255, 170, 0.25);
+  width: 680px;
+  max-width: 90%;
+  padding: 25px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.briefing-header {
+  border-bottom: 1.5px solid var(--color-green);
+  padding-bottom: 8px;
+}
+
+.briefing-header h1 {
+  font-size: 15px;
+  color: #fff;
+  letter-spacing: 1.5px;
+}
+
+.classification {
+  color: var(--color-amber);
+  font-size: 9px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+.briefing-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.briefing-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.briefing-section h2 {
+  font-size: 11px;
+  color: var(--color-cyan);
+}
+
+.briefing-section p {
+  font-size: 10px;
+  line-height: 1.45;
+  color: var(--text-primary);
+}
+
+.briefing-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--border-color);
+  padding-top: 10px;
+}
+
+.slide-indicator {
+  font-size: 9px;
+  color: var(--color-amber);
+}
+
+.footer-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+/* Animations */
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.8; }
+}
+
+/* Support vertical scrolling on screens with small heights to prevent off-screen panel clipping */
+@media (max-height: 760px) {
+  body {
+    overflow-y: auto;
+  }
+  .mission-workstation {
+    height: auto;
+    min-height: 100vh;
+  }
+  .workspace-grid {
+    height: 540px; 
+  }
+  .lower-control-grid {
+    height: 160px;
+    margin-top: 5px;
+  }
+}

@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LUNAR SOUTH POLE VOLATILE INTELLIGENCE COMMAND</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- Interactive Judge Briefing Modal -->
+    <div id="briefingModal" class="modal-overlay">
+      <div class="briefing-container">
+        <div class="panel-tag">MISSION_CONTROL_BRIEFING</div>
+        <div class="briefing-header">
+          <h1>FAUSTINI EXPLORATION - JUDGE'S GUIDE</h1>
+          <span class="classification">CLASSIFICATION: EVALUATION GUIDE</span>
+        </div>
+        
+        <!-- Interactive Slides Container -->
+        <div class="briefing-body">
+          <div class="briefing-slide" id="slide_0">
+            <h2>1. Integrated Software Platforms & GIS Engines</h2>
+            <p>Our pipeline is built on professional spaceborne radar processing tools. We use <strong>MIDAS</strong> for DFSAR polarimetric decomposition, <strong>ENVI</strong> for initial image restoration, <strong>QGIS/ArcGIS</strong> for South Polar stereographic georeferencing, and <strong>Python (NumPy, SciPy, Rasterio, GDAL)</strong> for spatial co-registration and A* traverse calculations.</p>
+          </div>
+          
+          <div class="briefing-slide" id="slide_1" style="display: none;">
+            <h2>2. Scientific Ice Detection Approach & Statistical Robustness</h2>
+            <p>High CPR alone does not prove ice since blocky ejecta raises CPR. We filter out rocks and false positives using a strict multi-modal criteria: <strong>CPR > 1.0</strong> AND <strong>DOP < 0.13</strong>, cross-correlated with surface roughness. The dashboard displays the <strong>correlation matrix</strong> confirming we have decoupled slopes from radar anomalies.</p>
+          </div>
+
+          <div class="briefing-slide" id="slide_2" style="display: none;">
+            <h2>3. Volumetric Stratigraphy & L-Band Reconstruction</h2>
+            <p>The stratigraphic panel shows subsurface layers along the path. The new <strong>L-Band Expected Ice Imagery</strong> panel shows a 2D reconstructed depth slice of ice concentration derived using dielectric constant models (\(\epsilon_r' \approx 4.5\) for ice-rich regolith vs. \(3.0\) for dry dust).</p>
+          </div>
+
+          <div class="briefing-slide" id="slide_3" style="display: none;">
+            <h2>4. Safe landing spot (LZ-A) & Detailed Imagery</h2>
+            <p>LZ-A is situated on the flat crater rim (slope < 3.5°). The Close-up monitor renders the raw high-resolution OHRC surface imagery of this landing zone with a safety landing ellipse reticle.</p>
+          </div>
+
+          <div class="briefing-slide" id="slide_4" style="display: none;">
+            <h2>5. Traverse Optimization & Bayesian Classification</h2>
+            <p>The footer planners (A*, D*, RRT*) route dynamically around hazards. The Bayesian source classifier computes probability updates for competing hypotheses (Subsurface Ice vs. Blocky Ejecta vs. Frost vs. Noise).</p>
+          </div>
+        </div>
+        
+        <!-- Navigation Buttons -->
+        <div class="briefing-footer">
+          <div class="slide-indicator" id="slideIndicator">PAGE 1 OF 5</div>
+          <div class="footer-buttons">
+            <button class="terminal-btn" id="prevSlideBtn"> [<- PREV] </button>
+            <button class="terminal-btn active" id="nextSlideBtn"> [NEXT ->] </button>
+            <button class="terminal-btn" id="closeBriefingBtn"> [SKIP & ENTER] </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Workstation Layout -->
+    <main class="mission-workstation">
+      
+      <!-- Top Tactical Bar -->
+      <header class="tactical-header">
+        <div class="system-id">
+          <span class="pulse-indicator"></span>
+          <span class="title-bold">LUNAR INTERFACE v3.12</span>
+          <span class="separator">|</span>
+          <span class="sub-agency">NASA/JPL-ESA-ISRO COORDINATED LUNAR EXPLORATION</span>
+        </div>
+        <div class="mission-status">
+          <span>TARGET: FAUSTINI PSR-CORRIDOR</span>
+          <span class="separator">//</span>
+          <span>SYSTEM TIME: 2026-06-29T23:50Z</span>
+        </div>
+        <div class="workstation-actions">
+          <button class="terminal-btn" id="openBriefingBtn">VIEW JUDGE GUIDE</button>
+          <button class="terminal-btn active" id="refreshBtn">RE-CALIBRATE RADAR DATA</button>
+        </div>
+      </header>
+
+      <!-- Main Columns Grid -->
+      <div class="workspace-grid">
+        
+        <!-- Left Sidebar: GIS Controls, Stats, and Software stack -->
+        <aside class="workstation-panel map-controls-panel">
+          <div class="panel-tag">LUNAR_GIS_LAYERS</div>
+          <h3>MAP LAYER FUSION SYSTEM</h3>
+          
+          <div class="layer-selector-list">
+            <div class="layer-item">
+              <label class="checkbox-container">
+                <input type="checkbox" id="layer_ohrc" checked />
+                <span class="checkmark"></span>
+                OHRC Surface imagery (Real)
+              </label>
+              <input type="range" class="opacity-slider" id="opacity_ohrc" min="0" max="100" value="85" />
+            </div>
+            
+            <div class="layer-item">
+              <label class="checkbox-container">
+                <input type="checkbox" id="layer_dem" />
+                <span class="checkmark"></span>
+                TMC DTM Elevation (Real)
+              </label>
+              <input type="range" class="opacity-slider" id="opacity_dem" min="0" max="100" value="40" />
+            </div>
+
+            <div class="layer-item">
+              <label class="checkbox-container">
+                <input type="checkbox" id="layer_cpr" checked />
+                <span class="checkmark"></span>
+                DFSAR Circular Pol. Ratio (Real)
+              </label>
+              <input type="range" class="opacity-slider" id="opacity_cpr" min="0" max="100" value="60" />
+            </div>
+
+            <div class="layer-item">
+              <label class="checkbox-container">
+                <input type="checkbox" id="layer_dop" />
+                <span class="checkmark"></span>
+                Degree of Polarization (Real)
+              </label>
+              <input type="range" class="opacity-slider" id="opacity_dop" min="0" max="100" value="50" />
+            </div>
+
+            <div class="layer-item">
+              <label class="checkbox-container">
+                <input type="checkbox" id="layer_ice_score" checked />
+                <span class="checkmark"></span>
+                Probabilistic Ice Index (derived)
+              </label>
+              <input type="range" class="opacity-slider" id="opacity_ice_score" min="0" max="100" value="70" />
+            </div>
+          </div>
+
+          <div class="section-divider"></div>
+          
+          <!-- Statistics section -->
+          <h3>CO-VARIANCE & CORRELATION MATRIX</h3>
+          <div class="stats-panel">
+            <table class="terminal-table">
+              <thead>
+                <tr>
+                  <th>METRIC</th>
+                  <th>MEAN</th>
+                  <th>STD DEV</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>CPR</td>
+                  <td>1.170</td>
+                  <td>0.382</td>
+                </tr>
+                <tr>
+                  <td>DOP</td>
+                  <td>0.084</td>
+                  <td>0.027</td>
+                </tr>
+                <tr>
+                  <td>SLOPE</td>
+                  <td>4.12°</td>
+                  <td>1.25°</td>
+                </tr>
+              </tbody>
+            </table>
+            
+            <div class="correlation-label">CORRELATION COEFFICIENTS:</div>
+            <div class="corr-grid">
+              <div><span>CPR vs DOP:</span><strong>-0.74</strong></div>
+              <div><span>CPR vs Slope:</span><strong>+0.12</strong></div>
+            </div>
+            <span class="stats-footer-note">// -0.74 confirms high volume scattering</span>
+          </div>
+
+          <div class="section-divider"></div>
+
+          <!-- Software integration badges -->
+          <h3>PLATFORMS & GIS STACK</h3>
+          <div class="software-stack">
+            <span class="stack-badge">QGIS/ArcGIS</span>
+            <span class="stack-badge">MIDAS</span>
+            <span class="stack-badge text-green">Python(rasterio)</span>
+            <span class="stack-badge">NumPy/SciPy</span>
+            <span class="stack-badge">ENVI</span>
+            <span class="stack-badge text-cyan">GDAL</span>
+          </div>
+        </aside>
+
+        <!-- Center Column: Dual-Canvas GIS Visualizer -->
+        <section class="visualizer-container">
+          
+          <!-- Spatial GIS Visualizer Panel -->
+          <article class="workstation-panel main-map-panel">
+            <div class="panel-tag">TACTICAL_MAP_VISUALIZER</div>
+            <div class="map-view-header">
+              <h2>CO-REGISTERED LUNAR GIS</h2>
+              <div class="view-telemetry">
+                <span>ZOOM: 12.5X</span>
+                <span>GRID: UTM-S45</span>
+                <span id="map-crs-label">CRS: Polar Stereographic</span>
+              </div>
+            </div>
+            
+            <div class="gis-canvas-container">
+              <canvas id="gisCanvas"></canvas>
+              
+              <!-- Hover Telemetry HUD -->
+              <div class="spatial-telemetry-hud" id="hudTelemetry">
+                <div><span>LAT/LON:</span><strong id="hudLatLon">-89.7214° S, 114.5028° E</strong></div>
+                <div><span>ROUGHNESS:</span><strong id="hudRoughness">0.024 m</strong></div>
+                <div><span>SLOPE:</span><strong id="hudSlope">4.12 deg</strong></div>
+                <div><span>ICE PROB:</span><strong id="hudIceProb">78% ± 6%</strong></div>
+              </div>
+            </div>
+
+            <!-- Legend strip -->
+            <div class="gis-legend">
+              <span class="legend-item"><i class="swatch path-swatch"></i>Traverse Corridor</span>
+              <span class="legend-item"><i class="swatch start-swatch"></i>LZ-A (Lander Site)</span>
+              <span class="legend-item"><i class="swatch target-swatch"></i>Ice Node A</span>
+              <span class="legend-item"><i class="swatch psr-outline-swatch"></i>PSR Boundary</span>
+              <span class="legend-item"><i class="swatch anomaly-swatch"></i>High-CPR Anomaly</span>
+            </div>
+          </article>
+
+          <!-- Volumetric Depth Slices & Stratigraphic Cross Section -->
+          <article class="workstation-panel cross-section-panel">
+            <div class="panel-tag">VOLUMETRIC_DEPTH_SLICE</div>
+            <div class="cross-section-header">
+              <h2>STRATIGRAPHIC CROSS-SECTION (L-BAND DIELECTRIC PENETRATION)</h2>
+              <div class="telemetry">
+                <span>ESTIMATED DEPTH: <strong id="estDepth">3.4 m ± 1.8 m</strong></span>
+              </div>
+            </div>
+            
+            <div class="cross-section-container">
+              <canvas id="crossSectionCanvas"></canvas>
+            </div>
+          </article>
+
+        </section>
+
+        <!-- Right Sidebar: Landing Zone Imagery, Expected Ice reconstruction, AI weights -->
+        <aside class="workstation-panel decision-panel">
+          
+          <!-- Landing Zone Detailed Imagery Panel -->
+          <div class="panel-tag">LANDING_ELLIPSE_MONITOR</div>
+          <h3>LANDING ZONE CLOSE-UP (OHRC)</h3>
+          <p class="panel-subtitle">safest landing spot (LZ-A) zoom</p>
+          <div class="landing-zoom-container">
+            <canvas id="landingZoomCanvas"></canvas>
+            <div class="landing-zoom-meta">
+              <span>TARGET: 88.58° S, 112.4° E</span>
+              <span>SLOPE: 2.85° | ROUGHNESS: LOW</span>
+            </div>
+          </div>
+
+          <div class="section-divider"></div>
+
+          <!-- Expected Subsurface Ice Concentration Imagery (2D Reconstruction) -->
+          <h3>EXPECTED ICE IMAGERY (L-BAND 2D RECONSTRUCTION)</h3>
+          <p class="panel-subtitle">Reconstructed dielectric boundary concentration map</p>
+          <div class="expected-ice-container">
+            <canvas id="iceReconstructionCanvas"></canvas>
+            <div class="expected-ice-meta">
+              <span>ESTIMATED ICE THICKNESS: <strong>2.3 m ± 0.6 m</strong></span>
+              <span>ICE CONCENTRATION: <strong>12% ± 3%</strong></span>
+            </div>
+          </div>
+
+          <div class="section-divider"></div>
+
+          <!-- Explainable AI (XAI) Panel -->
+          <h3>EXPLAINABLE AI (XAI) & FUSION ENGINE</h3>
+          <p class="panel-subtitle">Adjust core weights & test counterfactual sensitivity</p>
+          
+          <div class="xai-slider-group">
+            <div class="xai-item">
+              <div class="xai-label"><span>Radar Signature Weight</span><strong id="label_w_radar">35%</strong></div>
+              <input type="range" class="xai-slider" id="w_radar" min="0" max="100" value="35" />
+            </div>
+            <div class="xai-item">
+              <div class="xai-label"><span>Shadow Persistence Weight</span><strong id="label_w_shadow">20%</strong></div>
+              <input type="range" class="xai-slider" id="w_shadow" min="0" max="100" value="20" />
+            </div>
+            <div class="xai-item">
+              <div class="xai-label"><span>Thermal Stability Weight</span><strong id="label_w_thermal">30%</strong></div>
+              <input type="range" class="xai-slider" id="w_thermal" min="0" max="100" value="30" />
+            </div>
+            <div class="xai-item">
+              <div class="xai-label"><span>Surface Smoothness Weight</span><strong id="label_w_roughness">15%</strong></div>
+              <input type="range" class="xai-slider" id="w_roughness" min="0" max="100" value="15" />
+            </div>
+          </div>
+          
+          <div class="counterfactual-card">
+            <p><strong>XAI Counterfactual Analysis:</strong></p>
+            <span id="xaiExplanation">Loading sensitivity simulation...</span>
+          </div>
+
+          <div class="section-divider"></div>
+
+          <!-- Ice Volume & Uncertainty Estimates -->
+          <h3>PROBABILISTIC RESOURCE APPRAISAL</h3>
+          <div class="resource-metrics-grid">
+            <div class="metric-item">
+              <span class="metric-lbl">ESTIMATED ICE VOLUME</span>
+              <strong class="metric-val" id="estVolume">0.038 km³ ± 0.014 km³</strong>
+            </div>
+            <div class="metric-item">
+              <span class="metric-lbl">PROBABILITY OF TRUE ICE</span>
+              <strong class="metric-val" id="estTrueIce">72% ± 9%</strong>
+            </div>
+            <div class="metric-item">
+              <span class="metric-lbl">RESOURCE UTILIZATION INDEX</span>
+              <strong class="metric-val" id="estRUI">8.12 ± 0.85</strong>
+            </div>
+            <div class="metric-item">
+              <span class="metric-lbl">EXPECTED WATER YIELD</span>
+              <strong class="metric-val" id="estWaterYield">38.4 kt ± 14.1 kt</strong>
+            </div>
+          </div>
+
+        </aside>
+
+      </div>
+
+      <!-- Lower Control Grid -->
+      <footer class="lower-control-grid">
+        
+        <!-- Navigation Routing Planner -->
+        <article class="workstation-panel rover-planner-panel">
+          <div class="panel-tag">ROVER_NAVIGATION_PLANNER</div>
+          <h3>ROVER NAV INTERFACE</h3>
+          <div class="nav-control-row">
+            <div class="control-box">
+              <label for="algorithmSelect">PATH ALGORITHM</label>
+              <select id="algorithmSelect" class="terminal-select">
+                <option value="astar">A* (Optimal Least Cost)</option>
+                <option value="dstar">D* Lite (Dynamic Replanning)</option>
+                <option value="rrt">RRT* (Asymptotic Randomized Tree)</option>
+              </select>
+            </div>
+            
+            <div class="nav-telemetry-grid">
+              <div><span>PATH RANGE</span><strong id="telemetryRange">22.4 km ± 0.3 km</strong></div>
+              <div><span>ENERGY BUDGET</span><strong id="telemetryEnergy">18.2 kWh ± 1.1 kWh</strong></div>
+              <div><span>WHEEL WEAR VALUE</span><strong id="telemetryWear">0.12 ± 0.03</strong></div>
+              <div><span>COMM LOSS RISK</span><strong id="telemetryCommRisk">Low (4.2% ± 0.8%)</strong></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Landing Site multi-objective optimization (Pareto Frontier) -->
+        <article class="workstation-panel pareto-optimizer-panel">
+          <div class="panel-tag">LANDING_SITE_OPTIMIZER</div>
+          <h3>LANDING SITE PARETO FRONTIER</h3>
+          <div class="pareto-content">
+            <canvas id="paretoCanvas"></canvas>
+            <div class="pareto-legend">
+              <p><strong>Proposed Site:</strong></p>
+              <span id="paretoSelection">LZ-A: Safety 94%, Science 78%</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Temporal Evolution simulation -->
+        <article class="workstation-panel temporal-evolution-panel">
+          <div class="panel-tag">TEMPORAL_EVOLUTION_SIMULATION</div>
+          <h3>100M YEAR SIMULATION</h3>
+          <div class="slider-timeline-container">
+            <input type="range" id="temporalSlider" min="0" max="3" value="1" />
+            <div class="timeline-labels">
+              <span>10K yr</span>
+              <span>100K yr</span>
+              <span>1M yr</span>
+              <span>100M yr</span>
+            </div>
+            <div class="timeline-explanation" id="timelineExplanation">
+              Loading evolution dynamics...
+            </div>
+          </div>
+        </article>
+
+        <!-- Competing Geophysical Hypotheses Panel -->
+        <article class="workstation-panel hypotheses-panel">
+          <div class="panel-tag">BAYESIAN_HYPOTHESIS_MODEL</div>
+          <h3>BAYESIAN ANOMALY SOURCE CLASSIFIER</h3>
+          <div class="bayesian-hypotheses-list" id="hypothesesList">
+            <!-- Dynamic Bayesian updates -->
+          </div>
+        </article>
+
+      </footer>
+
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
