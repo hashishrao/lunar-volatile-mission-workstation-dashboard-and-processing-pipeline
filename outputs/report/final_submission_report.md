@@ -125,20 +125,21 @@ We implement comparative routing engines:
 ### 1. Development & Engineering Hours
 * **Role**: 1 Radar & Planetary Data Scientist (120 hours) + 1 Full-Stack GIS Visualizer Developer (100 hours).
 * **Scope**: Preprocessing pipeline setup, polar stereographic co-registration, A*/RRT* routing algorithms, and interface development.
-* **Estimate**: **$18,500** (one-time development cost).
+* **Estimate**: **₹15.45 Lakhs** (~$18,500 USD, one-time development cost).
 
 ### 2. Software Licenses & Tools
-* **GIS Platform (QGIS / GDAL / Python libraries)**: **$0** (100% open-source stack, eliminating commercial ArcGIS/ENVI seat license costs of ~$3,500/year).
-* **MIDAS radar decomposition library**: **$0** (open-source academic code).
+* **GIS Platform (QGIS / GDAL / Python libraries)**: **₹0** (100% open-source stack, eliminating commercial ArcGIS/ENVI seat license costs of ~₹2.9 Lakhs/year).
+* **MIDAS radar decomposition library**: **₹0** (open-source academic code).
 
 ### 3. Cloud Compute & Infrastructure (Hosting)
 * **Compute (AWS EC2 c6i.4xlarge)**: Required only for processing raw, multi-gigabyte L-Band DFSAR and TMC DTM inputs.
-  * *Cost*: ~$120/month.
+  * *Cost*: ~₹10,020/month (~$120 USD).
 * **Workstation GIS Dashboard Hosting (Vercel / AWS Amplify)**:
-  * *Cost*: ~$20/month (team plans).
-* **Total Infrastructure**: **~$140/month** (recurring).
+  * *Cost*: ~₹1,670/month (~$20 USD).
+* **Total Infrastructure**: **~₹11,690/month** (~$140 USD, recurring).
 
 ### 4. Total Implementation Summary
-* **Capital Expense (CapEx)**: **$18,500** (initial software development).
-* **Operational Expense (OpEx)**: **$140/month** (hosting and data calibration compute).
+* **Capital Expense (CapEx)**: **₹15.45 Lakhs** (initial software development).
+* **Operational Expense (OpEx)**: **~₹11,690/month** (hosting and data calibration compute).
+
 
