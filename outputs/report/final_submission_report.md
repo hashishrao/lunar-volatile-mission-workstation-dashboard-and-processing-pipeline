@@ -117,3 +117,28 @@ We implement comparative routing engines:
   * Water Yield: $38.4\text{ kt} \pm 14.1\text{ kt}$.
   * Temporal Evolution: Simulates impact gardening and gas migration over 10K, 100K, 1M, and 100M year epochs.
   * Mission Readiness: $92\% \pm 3\%$ rating.
+
+---
+
+## Part 3: Estimated Implementation Cost (Feasibility Analysis)
+
+### 1. Development & Engineering Hours
+* **Role**: 1 Radar & Planetary Data Scientist (120 hours) + 1 Full-Stack GIS Visualizer Developer (100 hours).
+* **Scope**: Preprocessing pipeline setup, polar stereographic co-registration, A*/RRT* routing algorithms, and interface development.
+* **Estimate**: **$18,500** (one-time development cost).
+
+### 2. Software Licenses & Tools
+* **GIS Platform (QGIS / GDAL / Python libraries)**: **$0** (100% open-source stack, eliminating commercial ArcGIS/ENVI seat license costs of ~$3,500/year).
+* **MIDAS radar decomposition library**: **$0** (open-source academic code).
+
+### 3. Cloud Compute & Infrastructure (Hosting)
+* **Compute (AWS EC2 c6i.4xlarge)**: Required only for processing raw, multi-gigabyte L-Band DFSAR and TMC DTM inputs.
+  * *Cost*: ~$120/month.
+* **Workstation GIS Dashboard Hosting (Vercel / AWS Amplify)**:
+  * *Cost*: ~$20/month (team plans).
+* **Total Infrastructure**: **~$140/month** (recurring).
+
+### 4. Total Implementation Summary
+* **Capital Expense (CapEx)**: **$18,500** (initial software development).
+* **Operational Expense (OpEx)**: **$140/month** (hosting and data calibration compute).
+
