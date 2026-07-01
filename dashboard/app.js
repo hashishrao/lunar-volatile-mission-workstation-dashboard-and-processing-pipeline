@@ -4,21 +4,21 @@ let dashboardData = null;
 const state = {
   layers: {
     ohrc: true,
-    thermal: true,
-    dem: false,
-    cpr: true,
+    thermal: false,
+    dem: true, // Enable DEM by default to show the elevation map from the reference
+    cpr: false,
     dop: false,
-    ice_score: true,
+    ice_score: false,
     hazard: false,
   },
   opacity: {
-    ohrc: 0.85,
-    thermal: 0.50,
-    dem: 0.4,
+    ohrc: 0.5,
+    thermal: 0.5,
+    dem: 0.85,
     cpr: 0.6,
     dop: 0.5,
     ice_score: 0.7,
-    hazard: 0.4,
+    hazard: 0.7,
   },
   weights: {
     radar: 0.35,
@@ -27,7 +27,7 @@ const state = {
     roughness: 0.15,
   },
   algorithm: "astar", // astar, dstar, rrt
-  temporalStep: 1, // 0: 10K, 1: 100K, 2: 1M, 3: 100M years
+  temporalStep: 1, 
   hoverPixel: { x: 0, y: 0, val: 0.5 },
 };
 
@@ -177,6 +177,23 @@ function bindModalControls() {
   updateSlides();
 }
 
+// Colormap mapping helpers matching MATLAB / Planetary Science Journal formats (Figure 3)
+function jetColorMap(val) {
+  // Standard Jet colormap (Blue -> Cyan -> Green -> Yellow -> Red)
+  const r = Math.max(0, Math.min(255, Math.floor(255 * (4 * val - 1.5))));
+  const g = Math.max(0, Math.min(255, Math.floor(255 * (1.5 - Math.abs(4 * val - 2)))));
+  const b = Math.max(0, Math.min(255, Math.floor(255 * (1.5 - Math.abs(4 * val - 1)))));
+  return { r, g, b };
+}
+
+function magmaColorMap(val) {
+  // Magma-like colormap (Dark purple -> red -> orange -> yellow)
+  const r = Math.max(0, Math.min(255, Math.floor(255 * Math.pow(val, 0.8))));
+  const g = Math.max(0, Math.min(255, Math.floor(255 * Math.pow(val, 1.8))));
+  const b = Math.max(0, Math.min(255, Math.floor(255 * Math.pow(val, 3.0))));
+  return { r, g, b };
+}
+
 function handleGisMouseMove(e) {
   if (!dashboardData) return;
   const rect = gisCanvas.getBoundingClientRect();
@@ -195,14 +212,15 @@ function handleGisMouseMove(e) {
     const hazardVal = (dashboardData.hazard_score[gridY] || [])[gridX] || 0.0;
     const iceScoreVal = (dashboardData.ice_score[gridY] || [])[gridX] || 0.0;
     
-    const physicalSlope = (hazardVal * 28.0).toFixed(1);
-    const physicalRoughness = (demVal * 0.12).toFixed(3);
+    // Map DTM normalized elevations (0 to 1) to physical range -2900m to -2600m
+    const physicalElevation = (-2900 + demVal * 300).toFixed(1);
+    const physicalSlope = (hazardVal * 15.0).toFixed(1);
     
     const lat = (-89.5 - (gridY / dashboardData.height) * 0.4).toFixed(4);
     const lon = (114.2 + (gridX / dashboardData.width) * 0.6).toFixed(4);
     
     document.getElementById("hudLatLon").textContent = `${lat}° S, ${lon}° E`;
-    document.getElementById("hudRoughness").textContent = `${physicalRoughness} m`;
+    document.getElementById("hudRoughness").textContent = `${physicalElevation} m (Elev)`;
     document.getElementById("hudSlope").textContent = `${physicalSlope}°`;
     
     const trueIceProb = Math.round(iceScoreVal * 100);
@@ -216,44 +234,7 @@ function handleGisMouseMove(e) {
 // Update core scientific calculations
 function updateCalculations() {
   if (!dashboardData) return;
-  
   const w = state.weights;
-  let totalArea = 0;
-  let volumeSum = 0.0;
-  
-  const h = dashboardData.height;
-  const w_grid = dashboardData.width;
-  
-  for (let y = 0; y < h; y++) {
-    const rowCPR = dashboardData.cpr[y] || [];
-    const rowDOP = dashboardData.dop[y] || [];
-    const rowDEM = dashboardData.dem[y] || [];
-    
-    for (let x = 0; x < w_grid; x++) {
-      const cpr = rowCPR[x] || 0.0;
-      const dop = rowDOP[x] || 0.0;
-      const dem = rowDEM[x] || 0.0;
-      
-      const radarSig = cpr * 0.6 + (1 - dop) * 0.4;
-      const shadowProxy = cpr > 0.5 ? 1.0 : 0.2;
-      const thermalStability = 1.0 - dem * 0.3; 
-      const smoothness = 1.0 - dem;
-      
-      const score = w.radar * radarSig + w.shadow * shadowProxy + w.thermal * thermalStability + w.roughness * smoothness;
-      
-      if (score > 0.62) {
-        totalArea += 100; // 10m x 10m pixels
-        
-        // Dielectric / penetration calculations
-        const localDepth = 1.5 + score * 3.5; 
-        const porosity = 0.38;
-        const saturationFraction = score * 0.20; 
-        
-        volumeSum += 100 * localDepth * porosity * saturationFraction;
-      }
-    }
-  }
-  
   const trueIcePct = Math.round(75 + w.radar * 15 - w.roughness * 20);
   updateBayesianHypotheses(trueIcePct);
 }
@@ -305,18 +286,15 @@ function renderGisMap() {
   const w = gisCanvas.width;
   const h = gisCanvas.height;
   
-  // Clear map canvas
   gisCtx.fillStyle = "#07080a";
   gisCtx.fillRect(0, 0, w, h);
   
-  // Create virtual frame buffer
   const image = gisCtx.createImageData(w, h);
   const data = image.data;
   
   const gridW = dashboardData.width;
   const gridH = dashboardData.height;
   
-  // Fetch active layer arrays
   const ohrc = dashboardData.ohrc;
   const dem = dashboardData.dem;
   const cpr = dashboardData.cpr;
@@ -324,7 +302,6 @@ function renderGisMap() {
   const ice_score = dashboardData.ice_score;
   const hazard = dashboardData.hazard_score;
   
-  // Perform pixel-by-pixel spatial fusion based on active overlays & opacity
   for (let y = 0; y < h; y++) {
     const gy = Math.floor(y * (gridH / h));
     
@@ -362,23 +339,25 @@ function renderGisMap() {
         alphaTotal += op;
       }
       
-      // 2. DEM Heightmap (blue-cyan tint)
+      // 2. DEM Heightmap (MATLAB Jet Color Map matching Figure 3a)
       if (state.layers.dem) {
         const val = rDEM[gx] || 0.0;
         const op = state.opacity.dem;
-        r += val * 20 * op;
-        g += val * 160 * op;
-        b += val * 220 * op;
+        const c = jetColorMap(val);
+        r += c.r * op;
+        g += c.g * op;
+        b += c.b * op;
         alphaTotal += op;
       }
       
-      // 3. CPR Anomalies (magma heat tint)
+      // 3. CPR Anomalies (Magma Heat Map matching Figure 3c/d)
       if (state.layers.cpr) {
         const val = rCPR[gx] || 0.0;
         const op = state.opacity.cpr;
-        r += val * 255 * op;
-        g += val * 80 * op;
-        b += val * 220 * op;
+        const c = magmaColorMap(val);
+        r += c.r * op;
+        g += c.g * op;
+        b += c.b * op;
         alphaTotal += op;
       }
       
@@ -402,13 +381,14 @@ function renderGisMap() {
         alphaTotal += op;
       }
       
-      // 6. Terrain Hazard Score
+      // 6. Terrain Hazard Score (Slope Jet colormap matching Figure 3b)
       if (state.layers.hazard) {
         const val = rHz[gx] || 0.0;
         const op = state.opacity.hazard;
-        r += val * 255 * op;
-        g += val * 20 * op;
-        b += val * 40 * op;
+        const c = jetColorMap(val);
+        r += c.r * op;
+        g += c.g * op;
+        b += c.b * op;
         alphaTotal += op;
       }
       
@@ -421,18 +401,11 @@ function renderGisMap() {
   }
   
   gisCtx.putImageData(image, 0, 0);
-  
-  // Render permanently shadowed region outline clearly (yellow boundary)
   drawPSRBoundary(gisCtx, w, h);
-  
-  // Render search tree visual simulation for selected algorithm
   drawPathSearchTree(gisCtx, w, h);
-  
-  // Render final computed rover path
   drawRoverTraversePath(gisCtx, w, h);
 }
 
-// Draw PSR Boundary clearly as a flat solid yellow/green outline
 function drawPSRBoundary(ctx, w, h) {
   if (!dashboardData) return;
   
@@ -549,11 +522,11 @@ function drawRoverTraversePath(ctx, w, h) {
   ctx.fillText("LZ-A START", sx + 10, sy + 3);
   
   ctx.fillStyle = varColor("amber");
-  ctx.fillText("ICE TARGET", ex + 10, ey + 3);
+  ctx.fillText("f2 CRATER", ex + 10, ey + 3); // Naming the target f2 Crater
   ctx.restore();
 }
 
-// Render dynamic geological depth slices with clear markings
+// Render dynamic geological 1D profile matching Figure 1(b) of f2 crater floor
 function renderCrossSection() {
   const w = crossSectionCanvas.width;
   const h = crossSectionCanvas.height;
@@ -561,49 +534,80 @@ function renderCrossSection() {
   csCtx.fillStyle = "#07080a";
   csCtx.fillRect(0, 0, w, h);
   
-  // Draw depth grid lines (0m to 5m)
+  // Elevation scale from -2800m to -2600m
   csCtx.strokeStyle = "rgba(255,255,255,0.06)";
   csCtx.lineWidth = 1;
-  for (let d = 0; d <= 5; d++) {
-    const y = (d / 5) * (h - 25) + 12;
+  const elevations = [-2600, -2650, -2700, -2750, -2800];
+  
+  elevations.forEach((el, idx) => {
+    const y = (idx / (elevations.length - 1)) * (h - 25) + 12;
     csCtx.beginPath();
     csCtx.moveTo(0, y);
     csCtx.lineTo(w, y);
     csCtx.stroke();
     
-    // Depth labels
     csCtx.fillStyle = "#9ca3af";
     csCtx.font = "8px monospace";
-    csCtx.fillText(`${d}.0 m`, 5, y - 2);
-  }
+    csCtx.fillText(`${el} m`, 5, y - 2);
+  });
   
   // Render stratigraphic layers (soil, ice lens, bedrock)
   csCtx.save();
   csCtx.beginPath();
-  csCtx.moveTo(0, h);
   
-  // Ground surface profile
+  // Draw floor profile mimicking Figure 1(b) (starting at -2650m, dropping down to -2790m in f2 crater)
+  csCtx.moveTo(0, h);
   for (let x = 0; x < w; x++) {
-    const surfaceY = 22 + Math.sin(x * 0.02) * 4 + Math.cos(x * 0.006) * 10;
-    csCtx.lineTo(x, surfaceY);
+    const pct = x / w;
+    let localElev = -2650;
+    
+    if (pct > 0.1 && pct < 0.25) {
+      // The sharp drop to -2790m at 3.5km (f2 crater floor)
+      const center = 0.175;
+      const dist = Math.abs(pct - center) / 0.075;
+      localElev = -2650 - (140 * Math.max(0, 1 - dist * dist));
+    } else {
+      // Normal undulating highlands floor
+      localElev = -2650 - (10 * Math.sin(pct * 25) + 5 * Math.cos(pct * 50));
+    }
+    
+    // Map localElev (-2600 to -2800) to Canvas pixels
+    const canvasY = ((localElev - (-2600)) / (-200)) * (h - 25) + 12;
+    csCtx.lineTo(x, canvasY);
   }
   csCtx.lineTo(w, h);
   csCtx.closePath();
   csCtx.fillStyle = "#2d3139"; 
   csCtx.fill();
   
-  // Subsurface ice lens (1.5m - 3.8m depth)
+  // Subsurface ice lens layer
   csCtx.beginPath();
   for (let x = 0; x < w; x++) {
-    const surfaceY = 22 + Math.sin(x * 0.02) * 4 + Math.cos(x * 0.006) * 10;
-    const iceTop = surfaceY + 28 + Math.sin(x * 0.01) * 7;
-    if (x === 0) csCtx.moveTo(x, iceTop);
-    else csCtx.lineTo(x, iceTop);
+    const pct = x / w;
+    let localElev = -2650;
+    if (pct > 0.1 && pct < 0.25) {
+      const center = 0.175;
+      const dist = Math.abs(pct - center) / 0.075;
+      localElev = -2650 - (140 * Math.max(0, 1 - dist * dist));
+    } else {
+      localElev = -2650 - (10 * Math.sin(pct * 25) + 5 * Math.cos(pct * 50));
+    }
+    const canvasY = ((localElev - 15 - (-2600)) / (-200)) * (h - 25) + 12;
+    if (x === 0) csCtx.moveTo(x, canvasY);
+    else csCtx.lineTo(x, canvasY);
   }
   for (let x = w - 1; x >= 0; x--) {
-    const surfaceY = 22 + Math.sin(x * 0.02) * 4 + Math.cos(x * 0.006) * 10;
-    const iceBottom = surfaceY + 58 - Math.cos(x * 0.012) * 12;
-    csCtx.lineTo(x, iceBottom);
+    const pct = x / w;
+    let localElev = -2650;
+    if (pct > 0.1 && pct < 0.25) {
+      const center = 0.175;
+      const dist = Math.abs(pct - center) / 0.075;
+      localElev = -2650 - (140 * Math.max(0, 1 - dist * dist));
+    } else {
+      localElev = -2650 - (10 * Math.sin(pct * 25) + 5 * Math.cos(pct * 50));
+    }
+    const canvasY = ((localElev - 35 - (-2600)) / (-200)) * (h - 25) + 12;
+    csCtx.lineTo(x, canvasY);
   }
   csCtx.closePath();
   csCtx.fillStyle = "rgba(6, 182, 212, 0.4)";
@@ -611,30 +615,10 @@ function renderCrossSection() {
   csCtx.strokeStyle = varColor("cyan");
   csCtx.stroke();
   
-  // Bedrock boundary
-  csCtx.beginPath();
-  csCtx.moveTo(0, h);
-  for (let x = 0; x < w; x++) {
-    const surfaceY = 22 + Math.sin(x * 0.02) * 4 + Math.cos(x * 0.006) * 10;
-    const bedrockTop = surfaceY + 75 + Math.sin(x * 0.015) * 5;
-    if (x === 0) csCtx.moveTo(x, bedrockTop);
-    else csCtx.lineTo(x, bedrockTop);
-  }
-  csCtx.lineTo(w, h);
-  csCtx.closePath();
-  csCtx.fillStyle = "#161b22"; 
-  csCtx.fill();
-  
-  // Labels overlay inside stratigraphic profile
   csCtx.fillStyle = "#e5e7eb";
-  csCtx.font = "bold 9px monospace";
-  csCtx.fillText("REGOLITH SOIL LAYER (0.0m - 1.5m)", w * 0.05, 20);
-  
-  csCtx.fillStyle = varColor("cyan");
-  csCtx.fillText("SUBSURFACE WATER-ICE LENS (1.5m - 3.8m)", w * 0.35, 60);
-  
-  csCtx.fillStyle = "#9ca3af";
-  csCtx.fillText("BEDROCK / DEEP REGOLITH MATRIX (>3.8m)", w * 0.65, 110);
+  csCtx.font = "bold 8.5px monospace";
+  csCtx.fillText("f2 DEEP DEPLETION (-2790m)", w * 0.13, h - 30);
+  csCtx.fillText("REGOLITH MATRIX", w * 0.4, h - 50);
   
   csCtx.restore();
 }
@@ -653,7 +637,6 @@ function renderLandingZoom() {
   if (!route || route.length === 0) return;
   const start = route[0];
   
-  // Zoomed out even more (halfSize = 180) to show regional context (craters & highlands)
   const centerR = Math.floor(start.r);
   const centerC = Math.floor(start.c);
   const halfSize = 180; 
@@ -678,7 +661,6 @@ function renderLandingZoom() {
   }
   lzCtx.putImageData(imgData, 0, 0);
   
-  // Overlay landing ellipse ring (neon green)
   lzCtx.save();
   lzCtx.strokeStyle = varColor("green");
   lzCtx.lineWidth = 1.5;
@@ -689,7 +671,6 @@ function renderLandingZoom() {
   lzCtx.stroke();
   lzCtx.setLineDash([]);
   
-  // Reticle crosshair
   lzCtx.strokeStyle = "rgba(0, 255, 170, 0.4)";
   lzCtx.lineWidth = 1;
   lzCtx.beginPath();
@@ -699,7 +680,6 @@ function renderLandingZoom() {
   lzCtx.lineTo(w / 2, h / 2 + 12);
   lzCtx.stroke();
   
-  // Monitor overlay markings
   lzCtx.fillStyle = varColor("green");
   lzCtx.font = "bold 8.5px monospace";
   lzCtx.fillText("REGIONAL OHRC ORTHOPHOTO (ZOOM: OUT)", 8, 12);
@@ -715,7 +695,6 @@ function renderIceReconstruction() {
   irCtx.fillStyle = "#000";
   irCtx.fillRect(0, 0, w, h);
   
-  // Draw simulated tomographic radar sweep grid
   const cols = 40;
   const rows = 20;
   const cw = w / cols;
@@ -732,10 +711,8 @@ function renderIceReconstruction() {
       let val = random();
       
       if (r < 6) {
-        // Soil
         irCtx.fillStyle = `rgba(100, 110, 120, ${0.12 + val * 0.08})`;
       } else if (r >= 6 && r < 14) {
-        // Subsurface Ice concentration (using 43.1% volume fraction index)
         const distFromCenter = Math.abs(c - cols / 2) / (cols / 2);
         const iceWeightFactor = state.weights.radar;
         const iceProb = (1 - distFromCenter) * iceWeightFactor;
@@ -746,14 +723,12 @@ function renderIceReconstruction() {
           irCtx.fillStyle = `rgba(75, 80, 90, ${0.18 + val * 0.08})`;
         }
       } else {
-        // Bedrock
         irCtx.fillStyle = `rgba(30, 35, 42, ${0.25 + val * 0.15})`;
       }
       irCtx.fillRect(c * cw, r * rh, cw - 1, rh - 1);
     }
   }
   
-  // Render animated sweep line
   const time = Date.now() / 1500;
   const sweepX = (time % 1) * w;
   irCtx.strokeStyle = "rgba(16, 185, 129, 0.7)";
@@ -763,7 +738,6 @@ function renderIceReconstruction() {
   irCtx.lineTo(sweepX, h);
   irCtx.stroke();
   
-  // Overlay radar grid
   irCtx.save();
   irCtx.strokeStyle = "rgba(255,255,255,0.03)";
   irCtx.lineWidth = 1;
@@ -795,7 +769,6 @@ function renderParetoFrontier() {
   pCtx.fillStyle = "#07080a";
   pCtx.fillRect(0, 0, w, h);
   
-  // Axes
   pCtx.strokeStyle = "rgba(255,255,255,0.1)";
   pCtx.lineWidth = 1;
   pCtx.beginPath();
@@ -804,7 +777,6 @@ function renderParetoFrontier() {
   pCtx.lineTo(w - 10, h - 20);
   pCtx.stroke();
   
-  // Labels
   pCtx.fillStyle = "#9ca3af";
   pCtx.font = "7px monospace";
   pCtx.fillText("SCIENCE", w - 45, h - 5);
@@ -815,7 +787,6 @@ function renderParetoFrontier() {
   pCtx.fillText("SAFETY", 0, 0);
   pCtx.restore();
   
-  // Draw Pareto frontier curve (dashed line)
   pCtx.strokeStyle = "rgba(16, 185, 129, 0.25)";
   pCtx.setLineDash([4, 4]);
   pCtx.beginPath();
@@ -824,7 +795,6 @@ function renderParetoFrontier() {
   pCtx.stroke();
   pCtx.setLineDash([]);
   
-  // Plot candidate points
   const points = [
     { x: 45, y: 18, label: "LZ-C (Steep, High Ice)", color: varColor("red") },
     { x: 75, y: 28, label: "LZ-A (Recommended Safe Rim)", color: varColor("green"), active: true },
@@ -844,7 +814,6 @@ function renderParetoFrontier() {
 }
 
 function bindControls() {
-  // Layer Toggles
   document.querySelectorAll(".layer-item input[type='checkbox']").forEach((checkbox) => {
     const key = checkbox.id.replace("layer_", "");
     checkbox.addEventListener("change", () => {
@@ -853,7 +822,6 @@ function bindControls() {
     });
   });
   
-  // Opacity Sliders
   document.querySelectorAll(".layer-item input[type='range']").forEach((slider) => {
     const key = slider.id.replace("opacity_", "");
     slider.addEventListener("input", () => {
@@ -862,7 +830,6 @@ function bindControls() {
     });
   });
   
-  // Algorithm selector
   document.getElementById("algorithmSelect").addEventListener("change", (e) => {
     state.algorithm = e.target.value;
     renderAllVisuals();
