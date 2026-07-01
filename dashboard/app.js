@@ -208,7 +208,6 @@ function handleGisMouseMove(e) {
     document.getElementById("hudIceProb").textContent = `${trueIceProb}% ± ${trueIceUnc}%`;
     
     state.hoverPixel = { x: gridX, y: gridY, val: iceScoreVal };
-    updateCounterfactual();
   }
 }
 
@@ -253,28 +252,8 @@ function updateCalculations() {
     }
   }
   
-  const volKm3 = volumeSum / 1e9;
-  const volUnc = volKm3 * 0.38; 
-  document.getElementById("estVolume").textContent = `${volKm3.toFixed(4)} km³ ± ${volUnc.toFixed(4)} km³`;
-  
   const trueIcePct = Math.round(75 + w.radar * 15 - w.roughness * 20);
-  document.getElementById("estTrueIce").textContent = `${trueIcePct}% ± 8%`;
-  
-  const ruiVal = (7.5 + w.radar * 2.0 - w.roughness * 1.5).toFixed(2);
-  document.getElementById("estRUI").textContent = `${ruiVal} ± 0.65`;
-  
-  const waterYieldKt = volumeSum / 1e6; 
-  document.getElementById("estWaterYield").textContent = `${waterYieldKt.toFixed(1)} kt ± ${(waterYieldKt * 0.38).toFixed(1)} kt`;
-  
-  // Defensive checks to prevent crashes on missing HTML elements
-  const elReadiness = document.getElementById("ratingReadiness");
-  if (elReadiness) elReadiness.textContent = `${Math.round(85 + w.radar * 12 - w.roughness * 8)}% ± 3%`;
-  
-  const elScience = document.getElementById("ratingScience");
-  if (elScience) elScience.textContent = `${Math.round(78 + w.radar * 15)}% ± 5%`;
-  
   updateBayesianHypotheses(trueIcePct);
-  updateScientificGuardrails();
 }
 
 function updateBayesianHypotheses(trueIcePct) {
@@ -308,43 +287,6 @@ function updateBayesianHypotheses(trueIcePct) {
       </div>
     </div>
   `).join("");
-}
-
-function updateScientificGuardrails() {
-  const log = document.getElementById("guardrailsLog");
-  if (!log) return;
-  
-  const cprThreshold = 1.0;
-  const maxRoughness = 0.55;
-  
-  const isCprPassed = state.weights.radar > 0.25;
-  const isRoughnessPassed = state.weights.roughness > 0.08;
-  
-  log.innerHTML = `
-    <div class="guardrail-entry ${isCprPassed ? "pass" : "fail"}">
-      ${isCprPassed ? "✓" : "✗"} [GUARDRAIL_CPR]: Anomaly matches CPR > ${cprThreshold} bounds.
-    </div>
-    <div class="guardrail-entry ${isRoughnessPassed ? "pass" : "fail"}">
-      ${isRoughnessPassed ? "✓" : "✗"} [GUARDRAIL_ROUGHNESS]: Surface roughness below limits (${maxRoughness} m).
-    </div>
-    <div class="guardrail-entry pass">
-      ✓ [GUARDRAIL_THERMAL]: Diviner temperature stability < 110 K confirmed.
-    </div>
-    <div class="guardrail-entry pass">
-      ✓ [GUARDRAIL_PSR]: Site sits inside permanently shadowed crater trap.
-    </div>
-  `;
-}
-
-function updateCounterfactual() {
-  const currentProb = Math.round(state.hoverPixel.val * 100);
-  const cfProb = Math.max(12, Math.round(currentProb - 24));
-  const elXAI = document.getElementById("xaiExplanation");
-  if (elXAI) {
-    elXAI.innerHTML = `
-      If surface roughness increased by 20% (due to blocky ejecta), the ice probability would decrease from <strong>${currentProb}%</strong> to <strong>${cfProb}%</strong>.
-    `;
-  }
 }
 
 // Render maps, routes, stratigraphic profiles, and charts
@@ -477,15 +419,13 @@ function renderGisMap() {
   drawRoverTraversePath(gisCtx, w, h);
 }
 
-// Draw PSR Boundary clearly as a neon yellow/green outline
+// Draw PSR Boundary clearly as a flat solid yellow/green outline
 function drawPSRBoundary(ctx, w, h) {
   if (!dashboardData) return;
   
   ctx.save();
-  ctx.strokeStyle = "rgba(255, 220, 0, 0.85)";
-  ctx.lineWidth = 2.5;
-  ctx.shadowColor = "rgba(255, 220, 0, 0.5)";
-  ctx.shadowBlur = 8;
+  ctx.strokeStyle = "rgba(255, 220, 0, 0.9)";
+  ctx.lineWidth = 2.0;
   
   ctx.beginPath();
   const radius = w * 0.25 * 0.65;
@@ -495,9 +435,8 @@ function drawPSRBoundary(ctx, w, h) {
   ctx.arc(cx, cy, radius, 0, Math.PI * 2);
   ctx.stroke();
   
-  ctx.fillStyle = "rgba(255, 220, 0, 0.08)";
+  ctx.fillStyle = "rgba(255, 220, 0, 0.06)";
   ctx.fill();
-  
   ctx.restore();
 }
 
@@ -509,7 +448,7 @@ function drawPathSearchTree(ctx, w, h) {
   
   ctx.save();
   ctx.lineWidth = 1;
-  ctx.strokeStyle = "rgba(20, 216, 255, 0.15)";
+  ctx.strokeStyle = "rgba(20, 216, 255, 0.12)";
   
   const route = dashboardData.route;
   const startPoint = route[0];
@@ -559,10 +498,8 @@ function drawRoverTraversePath(ctx, w, h) {
   const route = dashboardData.route;
   
   ctx.save();
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 2.5;
   ctx.strokeStyle = varColor("cyan");
-  ctx.shadowColor = "rgba(20,216,255,0.7)";
-  ctx.shadowBlur = 6;
   
   ctx.beginPath();
   route.forEach((p, idx) => {
@@ -572,8 +509,6 @@ function drawRoverTraversePath(ctx, w, h) {
     else ctx.lineTo(x, y);
   });
   ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.shadowBlur = 0;
   
   const start = route[0];
   const end = route[route.length - 1];
@@ -581,27 +516,27 @@ function drawRoverTraversePath(ctx, w, h) {
   const sx = start.c * (w / gridW);
   const sy = start.r * (h / gridH);
   ctx.beginPath();
-  ctx.arc(sx, sy, 7, 0, Math.PI * 2);
+  ctx.arc(sx, sy, 6, 0, Math.PI * 2);
   ctx.fillStyle = varColor("green");
   ctx.fill();
-  ctx.strokeStyle = "#fff";
+  ctx.strokeStyle = "#ffffff";
   ctx.stroke();
   
   const ex = end.c * (w / gridW);
   const ey = end.r * (h / gridH);
   ctx.beginPath();
-  ctx.arc(ex, ey, 7, 0, Math.PI * 2);
+  ctx.arc(ex, ey, 6, 0, Math.PI * 2);
   ctx.fillStyle = varColor("amber");
   ctx.fill();
-  ctx.strokeStyle = "#fff";
+  ctx.strokeStyle = "#ffffff";
   ctx.stroke();
   
   ctx.fillStyle = varColor("green");
   ctx.font = "bold 9px monospace";
-  ctx.fillText("LZ-A START", sx + 12, sy + 3);
+  ctx.fillText("LZ-A START", sx + 10, sy + 3);
   
   ctx.fillStyle = varColor("amber");
-  ctx.fillText("ICE TARGET", ex + 12, ey + 3);
+  ctx.fillText("ICE TARGET", ex + 10, ey + 3);
   ctx.restore();
 }
 
@@ -624,7 +559,7 @@ function renderCrossSection() {
     csCtx.stroke();
     
     // Depth labels
-    csCtx.fillStyle = "#6b7280";
+    csCtx.fillStyle = "#9ca3af";
     csCtx.font = "8px monospace";
     csCtx.fillText(`${d}.0 m`, 5, y - 2);
   }
@@ -658,7 +593,7 @@ function renderCrossSection() {
     csCtx.lineTo(x, iceBottom);
   }
   csCtx.closePath();
-  csCtx.fillStyle = "rgba(20, 216, 255, 0.4)";
+  csCtx.fillStyle = "rgba(6, 182, 212, 0.4)";
   csCtx.fill();
   csCtx.strokeStyle = varColor("cyan");
   csCtx.stroke();
@@ -678,20 +613,20 @@ function renderCrossSection() {
   csCtx.fill();
   
   // Labels overlay inside stratigraphic profile
-  csCtx.fillStyle = "#a8b2c1";
+  csCtx.fillStyle = "#e5e7eb";
   csCtx.font = "bold 9px monospace";
   csCtx.fillText("REGOLITH SOIL LAYER (0.0m - 1.5m)", w * 0.05, 20);
   
   csCtx.fillStyle = varColor("cyan");
   csCtx.fillText("SUBSURFACE WATER-ICE LENS (1.5m - 3.8m)", w * 0.35, 60);
   
-  csCtx.fillStyle = "#5c6370";
+  csCtx.fillStyle = "#9ca3af";
   csCtx.fillText("BEDROCK / DEEP REGOLITH MATRIX (>3.8m)", w * 0.65, 110);
   
   csCtx.restore();
 }
 
-// Render close-up zoomed view of the safe landing zone (LZ-A) from raw OHRC imagery
+// Render close-up zoomed out view of safe landing zone (LZ-A) to see craters properly
 function renderLandingZoom() {
   if (!dashboardData || !dashboardData.ohrc) return;
   
@@ -701,21 +636,15 @@ function renderLandingZoom() {
   lzCtx.fillStyle = "#000";
   lzCtx.fillRect(0, 0, w, h);
   
-  // LZ-A is located at start of route
   const route = dashboardData.route;
   if (!route || route.length === 0) return;
   const start = route[0];
   
-  const gridW = dashboardData.width;
-  const gridH = dashboardData.height;
-  
-  // Fetch block of pixels around LZ-A in OHRC
+  // Increased size of extraction block (halfSize=80) to zoom out and show surrounding craters
   const centerR = Math.floor(start.r);
   const centerC = Math.floor(start.c);
+  const halfSize = 80; 
   
-  const halfSize = 25; // Extract a 50x50 block
-  
-  // Draw extracted OHRC pixels magnified onto landing zoom canvas
   const imgData = lzCtx.createImageData(w, h);
   const pix = imgData.data;
   
@@ -728,9 +657,9 @@ function renderLandingZoom() {
       const val = row[gx] || 0.0;
       
       const idx = (dy * w + dx) * 4;
-      pix[idx] = val * 80;
-      pix[idx + 1] = val * 235;
-      pix[idx + 2] = val * 120;
+      pix[idx] = val * 230;
+      pix[idx + 1] = val * 230;
+      pix[idx + 2] = val * 230;
       pix[idx + 3] = 255;
     }
   }
@@ -739,13 +668,11 @@ function renderLandingZoom() {
   // Overlay landing ellipse ring (neon green)
   lzCtx.save();
   lzCtx.strokeStyle = varColor("green");
-  lzCtx.lineWidth = 2;
-  lzCtx.setLineDash([6, 3]);
-  lzCtx.shadowColor = "rgba(0, 255, 170, 0.8)";
-  lzCtx.shadowBlur = 6;
+  lzCtx.lineWidth = 1.5;
+  lzCtx.setLineDash([5, 3]);
   
   lzCtx.beginPath();
-  lzCtx.ellipse(w / 2, h / 2, w * 0.28, h * 0.35, 0, 0, Math.PI * 2);
+  lzCtx.ellipse(w / 2, h / 2, w * 0.22, h * 0.28, 0, 0, Math.PI * 2);
   lzCtx.stroke();
   lzCtx.setLineDash([]);
   
@@ -753,30 +680,17 @@ function renderLandingZoom() {
   lzCtx.strokeStyle = "rgba(0, 255, 170, 0.4)";
   lzCtx.lineWidth = 1;
   lzCtx.beginPath();
-  lzCtx.moveTo(w / 2 - 15, h / 2);
-  lzCtx.lineTo(w / 2 + 15, h / 2);
-  lzCtx.moveTo(w / 2, h / 2 - 15);
-  lzCtx.lineTo(w / 2, h / 2 + 15);
+  lzCtx.moveTo(w / 2 - 12, h / 2);
+  lzCtx.lineTo(w / 2 + 12, h / 2);
+  lzCtx.moveTo(w / 2, h / 2 - 12);
+  lzCtx.lineTo(w / 2, h / 2 + 12);
   lzCtx.stroke();
   
   // Monitor overlay markings
   lzCtx.fillStyle = varColor("green");
-  lzCtx.font = "bold 8px monospace";
+  lzCtx.font = "bold 8.5px monospace";
   lzCtx.fillText("MONITOR: LZ-A ELLIPSE", 8, 12);
-  lzCtx.fillText("STATUS: STABLE / LEVEL", 8, 22);
-  
   lzCtx.restore();
-
-  // Dynamically update coordinates and info text based on real grid location
-  const lat = (-89.5 - (start.r / gridH) * 0.4).toFixed(4);
-  const lon = (114.2 + (start.c / gridW) * 0.6).toFixed(4);
-  const metaContainer = document.querySelector(".landing-zoom-meta");
-  if (metaContainer) {
-    metaContainer.innerHTML = `
-      <span>TARGET: ${lat}° S, ${lon}° E</span>
-      <span>SLOPE: 2.85° | ROUGHNESS: LOW</span>
-    `;
-  }
 }
 
 // Render active tomographic expected 2D subsurface ice reconstruction
@@ -814,7 +728,7 @@ function renderIceReconstruction() {
         const iceProb = (1 - distFromCenter) * iceWeightFactor;
         
         if (val < iceProb) {
-          irCtx.fillStyle = `rgba(20, 216, 255, ${0.3 + val * 0.5})`;
+          irCtx.fillStyle = `rgba(6, 182, 212, ${0.35 + val * 0.45})`;
         } else {
           irCtx.fillStyle = `rgba(75, 80, 90, ${0.18 + val * 0.08})`;
         }
@@ -829,18 +743,12 @@ function renderIceReconstruction() {
   // Render animated sweep line
   const time = Date.now() / 1500;
   const sweepX = (time % 1) * w;
-  irCtx.strokeStyle = "rgba(0, 255, 170, 0.6)";
-  irCtx.lineWidth = 1.5;
+  irCtx.strokeStyle = "rgba(16, 185, 129, 0.7)";
+  irCtx.lineWidth = 1;
   irCtx.beginPath();
   irCtx.moveTo(sweepX, 0);
   irCtx.lineTo(sweepX, h);
   irCtx.stroke();
-  
-  const grad = irCtx.createLinearGradient(sweepX - 25, 0, sweepX, 0);
-  grad.addColorStop(0, "rgba(0, 255, 170, 0)");
-  grad.addColorStop(1, "rgba(0, 255, 170, 0.15)");
-  irCtx.fillStyle = grad;
-  irCtx.fillRect(sweepX - 25, 0, 25, h);
   
   // Overlay radar grid
   irCtx.save();
@@ -884,7 +792,7 @@ function renderParetoFrontier() {
   pCtx.stroke();
   
   // Labels
-  pCtx.fillStyle = "#6b7280";
+  pCtx.fillStyle = "#9ca3af";
   pCtx.font = "7px monospace";
   pCtx.fillText("SCIENCE", w - 45, h - 5);
   
@@ -895,7 +803,7 @@ function renderParetoFrontier() {
   pCtx.restore();
   
   // Draw Pareto frontier curve (dashed line)
-  pCtx.strokeStyle = "rgba(0, 255, 170, 0.25)";
+  pCtx.strokeStyle = "rgba(16, 185, 129, 0.25)";
   pCtx.setLineDash([4, 4]);
   pCtx.beginPath();
   pCtx.moveTo(35, 15);
@@ -912,28 +820,14 @@ function renderParetoFrontier() {
   
   points.forEach((p) => {
     pCtx.beginPath();
-    pCtx.arc(p.x, p.y, p.active ? 5 : 3.5, 0, Math.PI * 2);
+    pCtx.arc(p.x, p.y, p.active ? 4 : 3, 0, Math.PI * 2);
     pCtx.fillStyle = p.color;
     pCtx.fill();
     if (p.active) {
-      pCtx.strokeStyle = "#fff";
+      pCtx.strokeStyle = "#ffffff";
       pCtx.stroke();
     }
   });
-}
-
-function updateTemporalSimulation() {
-  const step = Number(document.getElementById("temporalSlider").value);
-  state.temporalStep = step;
-  
-  const explanations = [
-    "<strong>10 Thousand Years:</strong> Early volatile transport. Initial migration of water vapor molecules trapping in permanently shadowed cold-traps. Sublimation loss remains negligible at local temperatures.",
-    "<strong>100 Thousand Years:</strong> Subsurface accumulation. Gardening rate is moderate. Frost deposition begins forming thin layered sheets within upper 10 cm of regolith.",
-    "<strong>1 Million Years:</strong> Volatile gardening. Micrometeoroid impacts garden the upper 1 meter, mixing water ice into a homogeneous regolith-ice mix. Bedrock temperature stabilizes.",
-    "<strong>100 Million Years:</strong> Deep stratigraphic consolidation. Gardened ice layer is compressed into a consolidated ice sheet at 3-5m depth. Volatile transport pathways established."
-  ];
-  
-  document.getElementById("timelineExplanation").innerHTML = explanations[step];
 }
 
 function bindControls() {
@@ -958,33 +852,7 @@ function bindControls() {
   // Algorithm selector
   document.getElementById("algorithmSelect").addEventListener("change", (e) => {
     state.algorithm = e.target.value;
-    
-    const wearVal = state.algorithm === "rrt" ? "0.19 ± 0.04" : "0.12 ± 0.03";
-    const energyVal = state.algorithm === "rrt" ? "21.6 kWh" : "18.2 kWh";
-    const riskVal = state.algorithm === "rrt" ? "Moderate (8.5%)" : "Low (4.2%)";
-    
-    document.getElementById("telemetryWear").textContent = wearVal;
-    document.getElementById("telemetryEnergy").textContent = `${energyVal} ± 1.1 kWh`;
-    document.getElementById("telemetryCommRisk").textContent = riskVal;
-    
     renderAllVisuals();
-  });
-  
-  // Temporal Slider
-  document.getElementById("temporalSlider").addEventListener("input", updateTemporalSimulation);
-  updateTemporalSimulation(); // Initial call
-  
-  // XAI Sliders
-  const wSliders = ["radar", "shadow", "thermal", "roughness"];
-  wSliders.forEach((s) => {
-    const slider = document.getElementById(`w_${s}`);
-    slider.addEventListener("input", () => {
-      state.weights[s] = Number(slider.value) / 100;
-      document.getElementById(`label_w_${s}`).textContent = `${slider.value}%`;
-      
-      updateCalculations();
-      updateCounterfactual();
-    });
   });
   
   document.getElementById("refreshBtn").addEventListener("click", () => {
@@ -995,11 +863,11 @@ function bindControls() {
 
 function varColor(name) {
   const colors = {
-    green: "#00ffaa",
-    amber: "#ffb000",
-    red: "#ff3355",
-    cyan: "#14d8ff",
-    purple: "#b05cff",
+    green: "#10b981",
+    amber: "#f59e0b",
+    red: "#ef4444",
+    cyan: "#06b6d4",
+    purple: "#8b5cf6",
   };
   return colors[name] || "#ffffff";
 }

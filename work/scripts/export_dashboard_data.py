@@ -7,7 +7,7 @@ from rasterio.enums import Resampling
 from rasterio.warp import reproject
 from skimage.exposure import equalize_adapthist
 
-def read_and_downsample(path, out_width=150):
+def read_and_downsample(path, out_width=600):
     with rasterio.open(path) as src:
         out_height = int(src.height * (out_width / src.width))
         data = src.read(
@@ -18,18 +18,17 @@ def read_and_downsample(path, out_width=150):
         
         data = np.where(np.isnan(data) | np.isinf(data), 0, data)
         
-        # Apply Contrast Limited Adaptive Histogram Equalization (CLAHE)
+        # Apply CLAHE to enhance local contrast to show small craters clearly
         d_min, d_max = np.min(data), np.max(data)
         if d_max > d_min:
             norm = (data - d_min) / (d_max - d_min)
-            # Enhance local details like crater rims and slopes
             enhanced = equalize_adapthist(norm, clip_limit=0.02)
         else:
             enhanced = np.zeros_like(data)
             
         return enhanced.tolist(), src.height, src.width, out_height, out_width
 
-def read_and_downsample_ohrc(path, ref_path, out_width=150):
+def read_and_downsample_ohrc(path, ref_path, out_width=600):
     with rasterio.open(path) as src, rasterio.open(ref_path) as ref:
         aligned = np.empty((ref.height, ref.width), dtype='float32')
         reproject(
@@ -51,7 +50,7 @@ def read_and_downsample_ohrc(path, ref_path, out_width=150):
         
         downscaled = np.where(np.isnan(downscaled) | np.isinf(downscaled), 0, downscaled)
         
-        # Apply CLAHE to reveal the faint textures in shadowed craters
+        # Apply CLAHE to show all details and small craters on the surface
         d_min, d_max = np.min(downscaled), np.max(downscaled)
         if d_max > d_min:
             norm = (downscaled - d_min) / (d_max - d_min)
@@ -62,18 +61,17 @@ def read_and_downsample_ohrc(path, ref_path, out_width=150):
         return enhanced.tolist()
 
 def main():
-    print("Downsampling, enhancing contrast (CLAHE), and exporting rasters for dashboard...")
+    print("Downsampling to high resolution (600px width), enhancing contrast, and exporting rasters...")
     ref_path = "work/data/raw/dfsar_same_circular.tif"
     
-    dem_arr, orig_h, orig_w, target_h, target_w = read_and_downsample("work/data/raw/dem.tif")
-    cpr_arr, _, _, _, _ = read_and_downsample("work/data/processed/cpr.tif")
-    dop_arr, _, _, _, _ = read_and_downsample("work/data/raw/dfsar_dop.tif")
-    ice_score_arr, _, _, _, _ = read_and_downsample("work/data/processed/ice_score.tif")
-    ice_class_arr, _, _, _, _ = read_and_downsample("work/data/processed/ice_class.tif")
-    hazard_score_arr, _, _, _, _ = read_and_downsample("work/data/processed/hazard_score.tif")
+    dem_arr, orig_h, orig_w, target_h, target_w = read_and_downsample("work/data/raw/dem.tif", 600)
+    cpr_arr, _, _, _, _ = read_and_downsample("work/data/processed/cpr.tif", 600)
+    dop_arr, _, _, _, _ = read_and_downsample("work/data/raw/dfsar_dop.tif", 600)
+    ice_score_arr, _, _, _, _ = read_and_downsample("work/data/processed/ice_score.tif", 600)
+    ice_class_arr, _, _, _, _ = read_and_downsample("work/data/processed/ice_class.tif", 600)
+    hazard_score_arr, _, _, _, _ = read_and_downsample("work/data/processed/hazard_score.tif", 600)
     
-    # Process and align real OHRC surface imagery with CLAHE enhancement
-    ohrc_arr = read_and_downsample_ohrc("work/data/raw/ohrc_image.tif", ref_path)
+    ohrc_arr = read_and_downsample_ohrc("work/data/raw/ohrc_image.tif", ref_path, 600)
     
     # Load rover traverse path
     route = []
@@ -107,7 +105,7 @@ def main():
     with open(out_json, "w", encoding="utf-8") as f:
         json.dump(output_data, f)
         
-    print(f"Successfully wrote dashboard data to {out_json} ({target_w}x{target_h})")
+    print(f"Successfully wrote high-resolution dashboard data to {out_json} ({target_w}x{target_h})")
 
 if __name__ == "__main__":
     main()

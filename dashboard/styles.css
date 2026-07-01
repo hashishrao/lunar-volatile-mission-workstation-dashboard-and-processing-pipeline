@@ -1,19 +1,19 @@
 /* 
-  TACTICAL LUNAR COMMAND INTERFACE STYLE SHEET
-  Aesthetic: 2035 JPL Planetary workstation & Tactical GIS systems.
+  ISDA LUNAR SOUTH POLE VOLATILE EXPLORATION WORKSTATION STYLES
+  Design: Simple, informative, flat scientific interface.
 */
 
 :root {
-  --bg-primary: #07080a;
-  --bg-secondary: #0d1117;
-  --border-color: #1f242d;
-  --color-green: #00ffaa;
-  --color-amber: #ffb000;
-  --color-red: #ff3355;
-  --color-cyan: #14d8ff;
-  --color-purple: #b05cff;
-  --text-primary: #d1d5db;
-  --text-muted: #6b7280;
+  --bg-primary: #0b0f19;
+  --bg-secondary: #111827;
+  --border-color: #2e3b4e;
+  --color-green: #10b981;
+  --color-amber: #f59e0b;
+  --color-red: #ef4444;
+  --color-cyan: #06b6d4;
+  --color-purple: #8b5cf6;
+  --text-primary: #e5e7eb;
+  --text-muted: #9ca3af;
   --font-mono: 'JetBrains Mono', 'Share Tech Mono', monospace;
 }
 
@@ -32,7 +32,7 @@ body {
   height: 100vh;
 }
 
-/* Master workstation wrapper */
+/* Main workstation layout */
 .mission-workstation {
   padding: 8px;
   height: 100vh;
@@ -49,8 +49,8 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 12px;
-  letter-spacing: 1px;
+  font-size: 11.5px;
+  letter-spacing: 0.5px;
   height: 36px;
   flex-shrink: 0;
 }
@@ -62,16 +62,14 @@ body {
 }
 
 .pulse-indicator {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   background-color: var(--color-green);
   border-radius: 50%;
-  box-shadow: 0 0 8px var(--color-green);
-  animation: pulse 1.8s infinite;
 }
 
 .title-bold {
-  color: #fff;
+  color: #ffffff;
   font-weight: 700;
 }
 
@@ -89,14 +87,14 @@ body {
 
 .workstation-actions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 
 .terminal-btn {
-  background: transparent;
+  background: var(--bg-primary);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
-  padding: 3px 8px;
+  padding: 3px 10px;
   font-family: var(--font-mono);
   font-size: 10px;
   cursor: pointer;
@@ -106,13 +104,12 @@ body {
 .terminal-btn:hover {
   border-color: var(--color-cyan);
   color: var(--color-cyan);
-  background-color: rgba(20, 216, 255, 0.05);
+  background-color: rgba(6, 182, 212, 0.05);
 }
 
 .terminal-btn.active {
   border-color: var(--color-amber);
   color: var(--color-amber);
-  background-color: rgba(255, 176, 0, 0.05);
 }
 
 /* Base Workstation Panel */
@@ -120,7 +117,7 @@ body {
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
   position: relative;
-  padding: 10px;
+  padding: 12px 10px;
   display: flex;
   flex-direction: column;
   min-height: 0; 
@@ -134,7 +131,7 @@ body {
   border: 1px solid var(--border-color);
   border-top: none;
   font-size: 8px;
-  padding: 1px 5px;
+  padding: 1px 6px;
   color: var(--text-muted);
   letter-spacing: 0.5px;
   z-index: 5;
@@ -142,11 +139,9 @@ body {
 
 .workstation-panel h3 {
   font-size: 11px;
-  color: #fff;
-  margin-bottom: 3px;
-  letter-spacing: 1px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  padding-bottom: 2px;
+  color: #ffffff;
+  margin-bottom: 2px;
+  letter-spacing: 0.5px;
 }
 
 .panel-subtitle {
@@ -158,7 +153,7 @@ body {
 /* Workspace Grid (Upper Panel Block) */
 .workspace-grid {
   display: grid;
-  grid-template-columns: 260px 1fr 340px;
+  grid-template-columns: 290px 1fr 340px;
   gap: 8px;
   flex: 1;
   min-height: 0;
@@ -173,13 +168,13 @@ body {
 .layer-selector-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .layer-item {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 /* Custom Checkbox */
@@ -188,7 +183,7 @@ body {
   position: relative;
   padding-left: 20px;
   cursor: pointer;
-  font-size: 10.5px;
+  font-size: 10px;
   color: var(--text-primary);
   user-select: none;
 }
@@ -245,7 +240,6 @@ body {
   height: 3px;
   background: var(--border-color);
   outline: none;
-  opacity: 0.8;
 }
 
 .opacity-slider::-webkit-slider-thumb, .xai-slider::-webkit-slider-thumb {
@@ -267,16 +261,17 @@ body {
 .stats-panel {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   background-color: var(--bg-primary);
   border: 1px solid var(--border-color);
-  padding: 8px;
+  padding: 6px;
 }
 
 .terminal-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 9.5px;
+  margin-bottom: 6px;
 }
 
 .terminal-table th, .terminal-table td {
@@ -288,19 +283,17 @@ body {
 .terminal-table th {
   color: var(--text-muted);
   font-weight: normal;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .terminal-table td {
-  color: #fff;
+  color: #ffffff;
 }
 
-.correlation-label {
-  font-size: 8.5px;
-  color: var(--text-muted);
-  margin-top: 5px;
-  letter-spacing: 0.5px;
-}
+.text-green { color: var(--color-green) !important; }
+.text-cyan { color: var(--color-cyan) !important; }
+.text-red { color: var(--color-red) !important; }
+.text-amber { color: var(--color-amber) !important; }
+.text-muted { color: var(--text-muted) !important; }
 
 .corr-grid {
   display: grid;
@@ -317,14 +310,6 @@ body {
   font-size: 9px;
 }
 
-.corr-grid span {
-  color: var(--text-primary);
-}
-
-.corr-grid strong {
-  color: var(--color-cyan);
-}
-
 .stats-footer-note {
   font-size: 7.5px;
   color: var(--color-green);
@@ -335,7 +320,7 @@ body {
 .software-stack {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: 4px;
 }
 
 .stack-badge {
@@ -344,17 +329,6 @@ body {
   color: var(--text-primary);
   font-size: 8.5px;
   padding: 2px 6px;
-  border-radius: 2px;
-}
-
-.stack-badge.text-green {
-  color: var(--color-green);
-  border-color: rgba(0, 255, 170, 0.2);
-}
-
-.stack-badge.text-cyan {
-  color: var(--color-cyan);
-  border-color: rgba(20, 216, 255, 0.2);
 }
 
 /* Central Visualizer Section */
@@ -381,7 +355,7 @@ body {
 .map-view-header h2 {
   font-size: 11.5px;
   color: var(--color-green);
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
 }
 
 .view-telemetry {
@@ -394,7 +368,7 @@ body {
 .gis-canvas-container {
   position: relative;
   flex: 1;
-  background-color: var(--bg-primary);
+  background-color: #030712;
   border: 1px solid var(--border-color);
   overflow: hidden;
 }
@@ -413,9 +387,9 @@ body {
   position: absolute;
   bottom: 8px;
   left: 8px;
-  background-color: rgba(7, 8, 10, 0.92);
+  background-color: rgba(11, 15, 25, 0.95);
   border: 1px solid var(--border-color);
-  padding: 5px 10px;
+  padding: 5px 8px;
   pointer-events: none;
   font-size: 9px;
   display: flex;
@@ -435,6 +409,7 @@ body {
 
 .gis-legend {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   margin-top: 6px;
   font-size: 9px;
@@ -455,7 +430,7 @@ body {
 
 .path-swatch {
   background-color: var(--color-cyan);
-  border-bottom: 1.5px dashed #fff;
+  border-bottom: 1.5px dashed #ffffff;
 }
 
 .start-swatch {
@@ -478,7 +453,7 @@ body {
 }
 
 .anomaly-swatch {
-  background-color: rgba(176, 92, 255, 0.4);
+  background-color: rgba(139, 92, 246, 0.4);
   border: 1px solid var(--color-purple);
 }
 
@@ -506,7 +481,7 @@ body {
 }
 
 .cross-section-container {
-  background-color: var(--bg-primary);
+  background-color: #030712;
   border: 1px solid var(--border-color);
   flex: 1;
   position: relative;
@@ -532,9 +507,9 @@ body {
   flex-direction: column;
   gap: 4px;
   align-items: center;
-  background-color: var(--bg-primary);
+  background-color: #030712;
   border: 1px solid var(--border-color);
-  padding: 6px;
+  padding: 4px;
   position: relative;
   height: 155px;
 }
@@ -561,9 +536,9 @@ body {
   flex-direction: column;
   gap: 4px;
   align-items: center;
-  background-color: var(--bg-primary);
+  background-color: #030712;
   border: 1px solid var(--border-color);
-  padding: 6px;
+  padding: 4px;
   position: relative;
   height: 155px;
 }
@@ -588,74 +563,21 @@ body {
   color: var(--color-cyan);
 }
 
-.xai-slider-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.xai-item {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.xai-label {
-  display: flex;
-  justify-content: space-between;
-  font-size: 9.5px;
-}
-
-.xai-label span {
-  color: var(--text-primary);
-}
-
-.xai-label strong {
-  color: var(--color-cyan);
-}
-
-.counterfactual-card {
-  background-color: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  padding: 6px 10px;
-  margin-top: 8px;
+/* Alerts and status stylings */
+.sri-alert {
+  background-color: rgba(239, 68, 68, 0.08);
+  border: 1px solid var(--color-red);
+  color: var(--color-red);
   font-size: 9px;
+  padding: 6px;
   line-height: 1.35;
-  color: var(--color-cyan);
-}
-
-/* Metric Display in Right Sidebar */
-.resource-metrics-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 6px;
-}
-
-.metric-item {
-  background-color: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  padding: 6px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.metric-lbl {
-  font-size: 8px;
-  color: var(--text-muted);
-  letter-spacing: 0.5px;
-}
-
-.metric-val {
-  font-size: 11.5px;
-  color: #fff;
-  font-weight: bold;
+  margin-top: 4px;
 }
 
 /* Lower Control Grid (Footer Area) */
 .lower-control-grid {
   display: grid;
-  grid-template-columns: 260px 240px 1fr 340px; 
+  grid-template-columns: 290px 240px 1fr 340px; 
   gap: 8px;
   height: 155px; 
   flex-shrink: 0;
@@ -688,26 +610,26 @@ body {
 
 .nav-telemetry-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
+  grid-template-columns: 1fr;
+  gap: 4px;
 }
 
 .nav-telemetry-grid div {
   background-color: var(--bg-primary);
   border: 1px solid var(--border-color);
-  padding: 4px 6px;
+  padding: 4px 8px;
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .nav-telemetry-grid span {
-  font-size: 8px;
+  font-size: 8.5px;
   color: var(--text-muted);
 }
 
 .nav-telemetry-grid strong {
-  font-size: 10px;
-  color: var(--color-cyan);
+  font-size: 11px;
 }
 
 /* Landing Site Pareto Frontier Chart style */
@@ -736,40 +658,13 @@ body {
 }
 
 .pareto-legend strong {
-  color: #fff;
+  color: #ffffff;
 }
 
 .pareto-legend span {
   color: var(--color-green);
   display: block;
   margin-top: 2px;
-}
-
-/* Temporal Timeline */
-.slider-timeline-container {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1;
-  min-height: 0;
-}
-
-.timeline-labels {
-  display: flex;
-  justify-content: space-between;
-  font-size: 8px;
-  color: var(--text-muted);
-}
-
-.timeline-explanation {
-  background-color: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  padding: 5px 8px;
-  font-size: 8.5px;
-  line-height: 1.3;
-  color: var(--color-amber);
-  flex: 1;
-  overflow-y: auto;
 }
 
 /* Competing Geophysical Hypotheses */
@@ -811,6 +706,29 @@ body {
   background-color: var(--color-green);
 }
 
+/* Survival status card */
+.survival-status-card {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  padding: 10px;
+}
+
+.survival-alert {
+  background-color: rgba(239, 68, 68, 0.08);
+  border: 1px solid var(--color-red);
+  color: var(--color-red);
+  font-size: 11px;
+  padding: 8px;
+  font-weight: bold;
+  text-align: center;
+  width: 100%;
+  letter-spacing: 0.5px;
+}
+
 /* Judge Briefing Modal CSS styles */
 .modal-overlay {
   position: fixed;
@@ -823,19 +741,15 @@ body {
   justify-content: center;
   align-items: center;
   z-index: 9999;
-  transition: opacity 0.3s ease;
 }
 
 .modal-overlay.hidden {
   display: none;
-  opacity: 0;
-  pointer-events: none;
 }
 
 .briefing-container {
   background-color: var(--bg-secondary);
-  border: 2px solid var(--color-green);
-  box-shadow: 0 0 20px rgba(0, 255, 170, 0.25);
+  border: 1px solid var(--border-color);
   width: 680px;
   max-width: 90%;
   padding: 25px;
@@ -846,21 +760,20 @@ body {
 }
 
 .briefing-header {
-  border-bottom: 1.5px solid var(--color-green);
+  border-bottom: 1.5px solid var(--border-color);
   padding-bottom: 8px;
 }
 
 .briefing-header h1 {
-  font-size: 15px;
-  color: #fff;
-  letter-spacing: 1.5px;
+  font-size: 14px;
+  color: #ffffff;
+  letter-spacing: 1px;
 }
 
 .classification {
   color: var(--color-amber);
   font-size: 9px;
   font-weight: bold;
-  letter-spacing: 0.5px;
 }
 
 .briefing-body {
@@ -869,12 +782,6 @@ body {
   gap: 12px;
   max-height: 400px;
   overflow-y: auto;
-}
-
-.briefing-section {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
 }
 
 .briefing-section h2 {
@@ -906,14 +813,7 @@ body {
   gap: 8px;
 }
 
-/* Animations */
-@keyframes pulse {
-  0% { transform: scale(1); opacity: 0.8; }
-  50% { transform: scale(1.1); opacity: 1; }
-  100% { transform: scale(1); opacity: 0.8; }
-}
-
-/* Support vertical scrolling on screens with small heights to prevent off-screen panel clipping */
+/* Support vertical scrolling on screens with small heights */
 @media (max-height: 760px) {
   body {
     overflow-y: auto;
