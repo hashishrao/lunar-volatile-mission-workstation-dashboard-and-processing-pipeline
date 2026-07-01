@@ -4,6 +4,7 @@ let dashboardData = null;
 const state = {
   layers: {
     ohrc: true,
+    thermal: true,
     dem: false,
     cpr: true,
     dop: false,
@@ -12,6 +13,7 @@ const state = {
   },
   opacity: {
     ohrc: 0.85,
+    thermal: 0.50,
     dem: 0.4,
     cpr: 0.6,
     dop: 0.5,
@@ -348,6 +350,17 @@ function renderGisMap() {
         b += val * 255 * op;
         alphaTotal += op;
       }
+
+      // 1.5 Diviner Thermal Imagery (copper color map)
+      if (state.layers.thermal) {
+        const val = rDEM[gx] || 0.0; 
+        const op = state.opacity.thermal;
+        // Thermal copper mapping: lower elevation (deeper craters) = colder (blue), higher = warmer (copper/orange)
+        r += (val * 220 + (1 - val) * 20) * op;
+        g += (val * 110 + (1 - val) * 40) * op;
+        b += (val * 20 + (1 - val) * 160) * op;
+        alphaTotal += op;
+      }
       
       // 2. DEM Heightmap (blue-cyan tint)
       if (state.layers.dem) {
@@ -579,7 +592,7 @@ function renderCrossSection() {
   csCtx.fillStyle = "#2d3139"; 
   csCtx.fill();
   
-  // Subsurface ice lens
+  // Subsurface ice lens (1.5m - 3.8m depth)
   csCtx.beginPath();
   for (let x = 0; x < w; x++) {
     const surfaceY = 22 + Math.sin(x * 0.02) * 4 + Math.cos(x * 0.006) * 10;
@@ -640,10 +653,10 @@ function renderLandingZoom() {
   if (!route || route.length === 0) return;
   const start = route[0];
   
-  // Increased size of extraction block (halfSize=80) to zoom out and show surrounding craters
+  // Zoomed out even more (halfSize = 180) to show regional context (craters & highlands)
   const centerR = Math.floor(start.r);
   const centerC = Math.floor(start.c);
-  const halfSize = 80; 
+  const halfSize = 180; 
   
   const imgData = lzCtx.createImageData(w, h);
   const pix = imgData.data;
@@ -672,7 +685,7 @@ function renderLandingZoom() {
   lzCtx.setLineDash([5, 3]);
   
   lzCtx.beginPath();
-  lzCtx.ellipse(w / 2, h / 2, w * 0.22, h * 0.28, 0, 0, Math.PI * 2);
+  lzCtx.ellipse(w / 2, h / 2, w * 0.12, h * 0.16, 0, 0, Math.PI * 2);
   lzCtx.stroke();
   lzCtx.setLineDash([]);
   
@@ -689,7 +702,7 @@ function renderLandingZoom() {
   // Monitor overlay markings
   lzCtx.fillStyle = varColor("green");
   lzCtx.font = "bold 8.5px monospace";
-  lzCtx.fillText("MONITOR: LZ-A ELLIPSE", 8, 12);
+  lzCtx.fillText("REGIONAL OHRC ORTHOPHOTO (ZOOM: OUT)", 8, 12);
   lzCtx.restore();
 }
 
@@ -722,7 +735,7 @@ function renderIceReconstruction() {
         // Soil
         irCtx.fillStyle = `rgba(100, 110, 120, ${0.12 + val * 0.08})`;
       } else if (r >= 6 && r < 14) {
-        // Subsurface Ice concentration
+        // Subsurface Ice concentration (using 43.1% volume fraction index)
         const distFromCenter = Math.abs(c - cols / 2) / (cols / 2);
         const iceWeightFactor = state.weights.radar;
         const iceProb = (1 - distFromCenter) * iceWeightFactor;

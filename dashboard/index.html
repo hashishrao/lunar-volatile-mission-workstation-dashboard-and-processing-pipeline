@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <!-- Interactive Judge Briefing Modal -->
+    <!-- Interactive Briefing Modal -->
     <div id="briefingModal" class="modal-overlay">
       <div class="briefing-container">
         <div class="panel-tag">MISSION_CONTROL_BRIEFING</div>
@@ -19,7 +19,7 @@
           <span class="classification">CLASSIFICATION: EVALUATION GUIDE</span>
         </div>
         
-        <!-- Interactive Slides Container -->
+        <!-- Interactive Slides -->
         <div class="briefing-body">
           <div class="briefing-slide" id="slide_0">
             <h2>1. Software & Platform Stack Integration</h2>
@@ -73,7 +73,7 @@
         <div class="mission-status">
           <span>TARGET: FAUSTINI PSR-CORRIDOR</span>
           <span class="separator">//</span>
-          <span>SYSTEM TIME: 2026-07-01T14:08Z</span>
+          <span>SYSTEM TIME: 2026-07-01T14:18Z</span>
         </div>
         <div class="workstation-actions">
           <button class="terminal-btn" id="openBriefingBtn">VIEW JUDGE GUIDE</button>
@@ -84,7 +84,7 @@
       <!-- Main Columns Grid -->
       <div class="workspace-grid">
         
-        <!-- Left Sidebar: DFSAR Radar Physics & Controls -->
+        <!-- Left Sidebar: DFSAR Radar Physics, Thermal, and Layer Fusion -->
         <aside class="workstation-panel map-controls-panel">
           <div class="panel-tag">DFSAR_RADAR_PHYSICS</div>
           
@@ -134,6 +134,15 @@
                 OHRC Surface imagery (Real)
               </label>
               <input type="range" class="opacity-slider" id="opacity_ohrc" min="0" max="100" value="85" />
+            </div>
+
+            <div class="layer-item">
+              <label class="checkbox-container">
+                <input type="checkbox" id="layer_thermal" checked />
+                <span class="checkmark"></span>
+                Diviner Thermal Imagery (Real)
+              </label>
+              <input type="range" class="opacity-slider" id="opacity_thermal" min="0" max="100" value="50" />
             </div>
             
             <div class="layer-item">
@@ -230,6 +239,7 @@
               <span class="legend-item"><i class="swatch target-swatch"></i>Ice Node A</span>
               <span class="legend-item"><i class="swatch psr-outline-swatch"></i>PSR Boundary</span>
               <span class="legend-item"><i class="swatch anomaly-swatch"></i>High-CPR Anomaly</span>
+              <span class="legend-item"><i class="swatch thermal-swatch"></i>Thermal (Diviner)</span>
             </div>
           </article>
 
@@ -239,7 +249,7 @@
             <div class="cross-section-header">
               <h2>STRATIGRAPHIC CROSS-SECTION (L-BAND DIELECTRIC PENETRATION)</h2>
               <div class="telemetry">
-                <span>ESTIMATED DEPTH: <strong id="estDepth">3.4 m ± 1.8 m</strong></span>
+                <span>ESTIMATED DEPTH: <strong id="estDepth">1.5m - 3.8m</strong></span>
               </div>
             </div>
             
@@ -323,8 +333,9 @@
 
           <div class="section-divider"></div>
 
-          <!-- Landing Zone Detailed Imagery Panel -->
+          <!-- Landing Zone Detailed Imagery Panel (Even More Zoomed Out) -->
           <h3>LANDING ZONE CLOSE-UP (OHRC)</h3>
+          <p class="panel-subtitle">Zoomed out regional view (craters & highlands)</p>
           <div class="landing-zoom-container">
             <canvas id="landingZoomCanvas"></canvas>
             <div class="landing-zoom-meta">
@@ -352,7 +363,7 @@
       <!-- Lower Control Grid -->
       <footer class="lower-control-grid">
         
-        <!-- Navigation Routing Planner -->
+        <!-- Navigation Routing Planner & Rover Statistics -->
         <article class="workstation-panel rover-planner-panel">
           <div class="panel-tag">ROVER_NAVIGATION_PLANNER</div>
           <h3>4. ROVER NAV & POWER KINEMATICS</h3>

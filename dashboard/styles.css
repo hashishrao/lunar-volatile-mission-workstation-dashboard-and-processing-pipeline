@@ -457,6 +457,11 @@ body {
   border: 1px solid var(--color-purple);
 }
 
+.thermal-swatch {
+  background: linear-gradient(90deg, #1e3a8a, #d97706);
+}
+
+
 /* Stratigraphic Cross-Section Panel */
 .cross-section-panel {
   height: 155px; 
